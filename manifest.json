@@ -1,0 +1,26 @@
+{
+    "manifest_version": 3,
+    "name": "Quick Links for Github!",
+    "description": "Keeps record of the PR and Issues.",
+    "version": "1.0",
+    "action": {
+        "default_popup": "index.html"
+    },
+    "host_permissions": [
+        "*://github.com/*"
+    ],
+    "permissions": [
+        "tabs",
+        "storage",
+        "webRequest"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [{
+        "js": ["content_scripts/parseAndSave.js"],
+        "matches": [
+            "*://github.com/*"
+        ]
+    }]
+}

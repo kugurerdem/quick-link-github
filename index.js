@@ -5,14 +5,14 @@ const
     titleDelimiter = String.fromCharCode(183)
 
     main = async () => {
-        const {title, url} = await new Promise(res => {
+        const {title, url: pageUrl} = await new Promise(res => {
             chrome.tabs.query(
                 {active: true, currentWindow: true},
                 ([tab]) => res(tab),
             )
         })
 
-        if (pageUrlRegex.test(url)) {
+        if (pageUrlRegex.test(pageUrl)) {
             const
                 parts = title.split(titleDelimiter),
                 // ^ Title is delimited by the character '·' (183), with having
@@ -27,7 +27,7 @@ const
                 // parts as the page index and repo name.
                 // And then we join the rest of the parts as the page title.
 
-                pageType = url.includes('Issue') ? 'pr' : 'issue',
+                pageType = pageUrl.includes('Issue') ? 'pr' : 'issue',
 
             document.body.appendChild(createTitleElement('Copy from this page'))
 
@@ -36,7 +36,8 @@ const
                     pageTitle,
                     pageType,
                     pageIndex,
-                    pageUrl: url
+                    pageUrl,
+                    repoName,
                 })
             )
 

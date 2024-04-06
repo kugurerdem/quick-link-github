@@ -9,18 +9,5 @@
     "host_permissions": [
         "*://github.com/*"
     ],
-    "permissions": [
-        "tabs",
-        "storage",
-        "webRequest"
-    ],
-    "background": {
-        "service_worker": "background.js"
-    },
-    "content_scripts": [{
-        "js": ["content_scripts/parseAndSave.js"],
-        "matches": [
-            "*://github.com/*"
-        ]
-    }]
+    "permissions": [ "tabs", "storage" ]
 }

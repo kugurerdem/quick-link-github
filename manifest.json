@@ -6,8 +6,5 @@
     "action": {
         "default_popup": "index.html"
     },
-    "host_permissions": [
-        "*://github.com/*"
-    ],
     "permissions": [ "tabs", "storage" ]
 }

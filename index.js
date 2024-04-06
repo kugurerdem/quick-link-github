@@ -5,20 +5,28 @@ const
     titleDelimiter = String.fromCharCode(183)
 
     main = async () => {
-        const tab = await new Promise(res => {
+        const {title, url} = await new Promise(res => {
             chrome.tabs.query(
                 {active: true, currentWindow: true},
                 ([tab]) => res(tab),
             )
         })
 
-        const {title, url} = tab
         if (pageUrlRegex.test(url)) {
             const
                 parts = title.split(titleDelimiter),
+                // ^ Title is delimited by the character '·' (183), with having
+                // the form <issue or pr name> ' · ' <page index> ' · ' <repo
+                // name>.
+
                 [pageIndex, repoName] = parts.slice(-2),
-                pageType = url.includes('Issue') ? 'pr' : 'issue',
                 pageTitle = parts.slice(0, -2).join(titleDelimiter)
+                // ^ Since issue or pr name can contain the delimiter character,
+                // we split the title by the delimiter and take the last two
+                // parts as the page index and repo name.
+                // And then we join the rest of the parts as the page title.
+
+                pageType = url.includes('Issue') ? 'pr' : 'issue',
 
             document.body.appendChild(createTitleElement('Copy from this page'))
 
@@ -36,9 +44,7 @@ const
             )
         }
 
-        const titleElement2 = document.createElement('h1')
-        titleElement2.innerText = 'Previously copied'
-        document.body.appendChild(titleElement2)
+        document.body.appendChild(createTitleElement('Previously copied'))
 
         const {recentCopies} = await chrome.storage.local.get('recentCopies')
         if (!recentCopies) {

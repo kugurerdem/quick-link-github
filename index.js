@@ -19,7 +19,8 @@ const
                 // the form <issue or pr name> ' · ' <page index> ' · ' <repo
                 // name>.
 
-                [pageIndex, repoName] = parts.slice(-2),
+                [_pageIndex, repoName] = parts.slice(-2),
+                pageIndex = _pageIndex.match(/\d+/)[0],
                 pageTitle = parts.slice(0, -2).join(titleDelimiter)
                 // ^ Since issue or pr name can contain the delimiter character,
                 // we split the title by the delimiter and take the last two
@@ -33,7 +34,7 @@ const
             document.body.appendChild(
                 createPageElement({
                     pageTitle,
-                    pageType: 'Issue',
+                    pageType,
                     pageIndex,
                     pageUrl: url
                 })

@@ -1,6 +1,6 @@
 const
     pageUrlRegex =
-        /github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/issues|pull\/\d+$/,
+        /github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/(issues|pull)\/[0-9]+$/,
 
     titleDelimiter = String.fromCharCode(183)
 

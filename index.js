@@ -36,7 +36,7 @@ const
                 // parts as the page index and repo name.
                 // And then we join the rest of the parts as the page title.
 
-                pageType = pageUrl.includes('Issue') ? 'pr' : 'issue'
+                pageType = pageUrl.includes('Issue') ? 'issue' : 'pr'
 
             assign(state.currentPage, {
                 pageHeader, pageType, pageIndex, repoName,

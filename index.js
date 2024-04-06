@@ -9,8 +9,6 @@ const
     state = {
         currentPage: {},
         recentCopies: [],
-        pageUrl: '',
-        pageTitle: '',
     },
 
     init = async () => {
@@ -32,7 +30,7 @@ const
 
                 [_pageIndex, repoName] = parts.slice(-2),
                 pageIndex = _pageIndex.match(/\d+/)[0],
-                pageHeader = parts.slice(0, -2).join(titleDelimiter)
+                pageHeader = parts.slice(0, -2).join(titleDelimiter),
                 // ^ Since issue or pr name can contain the delimiter character,
                 // we split the title by the delimiter and take the last two
                 // parts as the page index and repo name.
@@ -86,14 +84,16 @@ const
 
     PageItem = ({pageHeader, pageType, pageIndex, pageUrl, repoName}) => `
         <li id="page-item-${pageUrl}">
-            <span>${pageType} ${pageIndex}: ${pageHeader}</span>
-            <button class="copy-button" id="copy-button-${pageUrl}">Copy</button>
+            <span>${repoName} ${pageType} ${pageIndex}: ${pageHeader} </span>
+            <button class="copy-button" id="copy-button-${pageUrl}">
+                Copy
+            </button>
         </li>
     `,
 
     setListeners = () => {
         document.querySelectorAll('.copy-button').forEach(
-            button => button.addEventListener('click', onCopyClick)
+            button => button.addEventListener('click', onCopyClick),
         )
     },
 
@@ -109,25 +109,25 @@ const
             state.recentCopies.push(state.currentPage)
         }
 
-        state.recentCopies.sort((a, _) => a.pageUrl == pageUrl ? -1 : 1)
-        chrome.storage.local.set({ recentCopies: state.recentCopies })
+        state.recentCopies.sort(a => a.pageUrl == pageUrl ? -1 : 1)
+        chrome.storage.local.set({recentCopies: state.recentCopies})
 
         render()
     },
 
     copyToClipboard = (text) => {
-        const textarea = document.createElement("textarea")
+        const textarea = document.createElement('textarea')
 
         textarea.value = text
-        textarea.style.position = "absolute"
-        textarea.style.left = "-9999px"
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
 
         document.body.appendChild(textarea)
 
-        textarea.select();
-        document.execCommand("copy")
+        textarea.select()
+        document.execCommand('copy')
 
-        document.body.removeChild(textarea);
+        document.body.removeChild(textarea)
     }
 
 document.addEventListener('DOMContentLoaded', init)

@@ -2,7 +2,7 @@ const
     {assign} = Object,
 
     pageUrlRegex =
-        /github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/(issues|pull)\/[0-9]+$/,
+        /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+$/,
 
     titleDelimiter = String.fromCharCode(183),
 
@@ -36,7 +36,7 @@ const
                 // parts as the page index and repo name.
                 // And then we join the rest of the parts as the page title.
 
-                pageType = pageUrl.includes('Issue') ? 'issue' : 'pr'
+                pageType = pageUrl.includes('issue') ? 'issue' : 'pr'
 
             assign(state.currentPage, {
                 pageHeader, pageType, pageIndex, repoName,

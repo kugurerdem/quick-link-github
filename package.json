@@ -1,18 +1,18 @@
 {
-  "name": "quick-link-github",
-  "version": "1.0.0",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "scripts": {
-    "lint": "prettier --check .",
-    "lint:fix": "prettier --write ."
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "prettier": "^3.2.5"
-  }
+    "name": "quick-link-github",
+    "version": "1.0.0",
+    "main": "index.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "scripts": {
+        "lint": "prettier --check .",
+        "lint:fix": "prettier --write ."
+    },
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "prettier": "^3.2.5"
+    }
 }

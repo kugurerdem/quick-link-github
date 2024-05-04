@@ -12,7 +12,7 @@ const state = {
 const init = async () => {
   const { title: pageTitle, url: pageUrl } = await new Promise((res) => {
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) =>
-      res(tab)
+      res(tab),
     );
   });
 
@@ -59,13 +59,12 @@ const App = (state) => {
   return [
     state.currentPage.pageType && CopyFromThisPage(state.currentPage),
     PreviouslyCopied(state.recentCopies),
-  ]
-    .filter(Boolean)
-    .join("<hr>");
+  ].filter(Boolean);
 };
 
 const CopyFromThisPage = (currentPage) => `
         <h1>Copy from this page</h1>
+        <hr>
         <ul>
             ${PageItem(currentPage)}
         </ul>
@@ -73,16 +72,17 @@ const CopyFromThisPage = (currentPage) => `
 
 const PreviouslyCopied = (recentCopies) => `
         <h1>Previously copied</h1>
-        <ul>
+        <hr>
+        <ol>
             ${recentCopies.map(PageItem).join("")}
-        </ul>
+        </ol>
     `;
 
 const PageItem = ({ pageHeader, pageType, pageIndex, pageUrl, repoName }) => `
-        <li id="page-item-${pageUrl}">
-            <span>${repoName} ${pageType} ${pageIndex}: ${pageHeader} </span>
+        <li id="page-item-${pageUrl}" class="contribution">
+            <span class="contribution-link">${pageHeader} #${pageIndex}</span>
             <button class="copy-button" id="copy-button-${pageUrl}">
-                Copy
+              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="22" fill="none"><path fill="#7A7A7A" d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"/></svg>
             </button>
         </li>
     `;

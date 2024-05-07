@@ -115,9 +115,9 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const pageUrl = e.target.id.split('copy-button-').slice(1).join(''),
-        pageItem = document.getElementById(`page-item-${pageUrl}`),
-        pageInfoText = pageItem.querySelector('span').innerText;
+    const pageUrl = e.currentTarget.id.split('copy-button-').slice(1).join('');
+    const pageItem = document.getElementById(`page-item-${pageUrl}`);
+    const pageInfoText = pageItem.querySelector('span').innerText;
 
     copyToClipboard(`[${pageInfoText}](${pageUrl})`);
 

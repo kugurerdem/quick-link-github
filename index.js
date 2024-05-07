@@ -62,44 +62,50 @@ const App = (state) => {
     ].filter(Boolean);
 };
 
-const CopyFromThisPage = (currentPage) => `
+const CopyFromThisPage = (currentPage) => {
+    const {pageHeader, pageIndex, pageUrl} = currentPage;
+    const longCopyText = `${pageHeader} #${pageIndex}`
+    const shortCopyText = `#${pageIndex}`
+    return  `
         <h1>Copy from this page</h1>
         <hr>
         <ul>
-            ${ContributionLong(currentPage)}
-            ${ContributionShort(currentPage)}
+            ${Contribution({
+                pageInfoText: longCopyText,
+                pageUrl,
+            })}
+            ${Contribution({
+                pageInfoText: shortCopyText,
+                pageUrl,
+            })}
         </ul>
-    `;
+    `
+};
 
 const PreviouslyCopied = (recentCopies) => `
         <h1>Previously copied</h1>
         <hr>
         <ol>
-            ${recentCopies.map(c =>
-                c.copyType == 'long'
-                    ? ContributionLong(c)
-                    : ContributionShort(c)
-                ).join('')}
+            ${recentCopies.map(Contribution).join('')}
         </ol>
     `;
 
-const ContributionLong = ({ pageHeader, pageIndex, pageUrl }) => `
-    <li id="page-item-long-${pageUrl}" class="contribution">
-        <span class="contribution-link">${pageHeader} #${pageIndex}</span>
-        <button class="copy-button" id="copy-button-long-${pageUrl}">
-        ${CopySvg}
-        </button>
-    </li>
-`;
-
-const ContributionShort = ({ pageIndex, pageUrl }) => `
-        <li id="page-item-short-${pageUrl}" class="contribution">
-            <span class="contribution-link">#${pageIndex}</span>
-            <button class="copy-button" id="copy-button-short-${pageUrl}">
+const Contribution = ({ pageInfoText, pageUrl }) => {
+    const id = `${pageInfoText}-${pageUrl}`;
+    return `
+        <li
+            id="page-item-${id}"
+            class="contribution"
+            data-page-url="${pageUrl}"
+            data-info-text="${pageInfoText}"
+        >
+            <span class="contribution-link">${pageInfoText}</span>
+            <button class="copy-button" id="copy-button-${id}">
             ${CopySvg}
             </button>
         </li>
-    `;
+    `
+}
 
 const CopySvg = `
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -119,30 +125,28 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    // Example: e.currentTarget.id is like 'copy-button-<long|short>-<pageUrl>
-    const buttonIdentifier =
+    const contributionId =
         e.currentTarget.id.split('copy-button-').slice(1).join('');
-    const [copyType, ...rest] = buttonIdentifier.split('-');
-    const pageUrl = rest.join('-');
-    const pageItem = document.getElementById(`page-item-${buttonIdentifier}`);
-    const pageInfoText = pageItem.querySelector('span').innerText;
+    const pageItem = document.getElementById(`page-item-${contributionId}`);
+
+    const pageUrl = pageItem.getAttribute('data-page-url');
+    const pageInfoText = pageItem.getAttribute('data-info-text');
 
     const textToCopy = `[${pageInfoText}](${pageUrl})`;
     copyToClipboard(textToCopy);
 
     if ( !state.recentCopies.some(
-        p => p.pageUrl == pageUrl && p.copyType == copyType
+        p => p.contributionId == contributionId
     )) {
         state.recentCopies.push({
-            copyType,
-            copiedText: textToCopy,
+            contributionId,
+            pageInfoText,
             ...state.currentPage,
         });
     }
 
-    state.recentCopies.sort((a) => (
-        a.pageUrl == pageUrl && a.copyType == copyType ? -1 : 1)
-    );
+    state.recentCopies.sort(
+        (a) => (a.contributionId == contributionId ? -1 : 1));
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 
     render();

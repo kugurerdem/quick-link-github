@@ -62,40 +62,61 @@ const App = (state) => {
     ].filter(Boolean);
 };
 
-const CopyFromThisPage = (currentPage) => `
+const CopyFromThisPage = (currentPage) => {
+    const {pageHeader, pageIndex, pageUrl} = currentPage;
+    const longCopyText = `${pageHeader} #${pageIndex}`
+    const shortCopyText = `#${pageIndex}`
+    return  `
         <h1>Copy from this page</h1>
         <hr>
         <ul>
-            ${ContributionLong(currentPage)}
-            ${ContributionShort(currentPage)}
+            ${Contribution({
+                pageInfoText: longCopyText,
+                pageUrl,
+            })}
+            ${Contribution({
+                pageInfoText: shortCopyText,
+                pageUrl,
+            })}
         </ul>
-    `;
+    `
+};
 
 const PreviouslyCopied = (recentCopies) => `
         <h1>Previously copied</h1>
         <hr>
         <ol>
-            ${recentCopies.map(ContributionLong).join('')}
+            ${recentCopies.map(Contribution).join('')}
         </ol>
     `;
 
-const ContributionLong = ({ pageHeader, pageIndex, pageUrl }) => `
-        <li id="page-item-${pageUrl}" class="contribution">
-            <span class="contribution-link">${pageHeader} #${pageIndex}</span>
-            <button class="copy-button" id="copy-button-${pageUrl}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="22" fill="none"><path fill="#7A7A7A" d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"/></svg>
+const Contribution = ({ pageInfoText, pageUrl }) => {
+    const id = `${pageInfoText}-${pageUrl}`;
+    return `
+        <li
+            id="page-item-${id}"
+            class="contribution"
+            data-page-url="${pageUrl}"
+            data-info-text="${pageInfoText}"
+        >
+            <span class="contribution-link">${pageInfoText}</span>
+            <button class="copy-button" id="copy-button-${id}">
+            ${CopySvg}
             </button>
         </li>
-    `;
+    `
+}
 
-const ContributionShort = ({ pageIndex, pageUrl }) => `
-        <li id="page-item-${pageUrl}" class="contribution">
-            <span class="contribution-link">#${pageIndex}</span>
-            <button class="copy-button" id="copy-button-${pageUrl}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="22" fill="none"><path fill="#7A7A7A" d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"/></svg>
-            </button>
-        </li>
-    `;
+const CopySvg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+        width="17" height="22"
+        fill="none"
+    >
+        <path
+            fill="#7A7A7A"
+            d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"
+        />
+    </svg>`
 
 const setListeners = () => {
     document
@@ -104,17 +125,28 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const pageUrl = e.target.id.split('copy-button-').slice(1).join(''),
-        pageItem = document.getElementById(`page-item-${pageUrl}`),
-        pageInfoText = pageItem.querySelector('span').innerText;
+    const contributionId =
+        e.currentTarget.id.split('copy-button-').slice(1).join('');
+    const pageItem = document.getElementById(`page-item-${contributionId}`);
 
-    copyToClipboard(`[${pageInfoText}](${pageUrl})`);
+    const pageUrl = pageItem.getAttribute('data-page-url');
+    const pageInfoText = pageItem.getAttribute('data-info-text');
 
-    if (!state.recentCopies.some(({ pageUrl: pUrl }) => pUrl === pageUrl)) {
-        state.recentCopies.push(state.currentPage);
+    const textToCopy = `[${pageInfoText}](${pageUrl})`;
+    copyToClipboard(textToCopy);
+
+    if ( !state.recentCopies.some(
+        p => p.contributionId == contributionId
+    )) {
+        state.recentCopies.push({
+            contributionId,
+            pageInfoText,
+            ...state.currentPage,
+        });
     }
 
-    state.recentCopies.sort((a) => (a.pageUrl == pageUrl ? -1 : 1));
+    state.recentCopies.sort(
+        (a) => (a.contributionId == contributionId ? -1 : 1));
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 
     render();

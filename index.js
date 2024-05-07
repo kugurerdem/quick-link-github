@@ -75,23 +75,27 @@ const PreviouslyCopied = (recentCopies) => `
         <h1>Previously copied</h1>
         <hr>
         <ol>
-            ${recentCopies.map(ContributionLong).join('')}
+            ${recentCopies.map(c =>
+                c.copyType == 'long'
+                    ? ContributionLong(c)
+                    : ContributionShort(c)
+                ).join('')}
         </ol>
     `;
 
 const ContributionLong = ({ pageHeader, pageIndex, pageUrl }) => `
-    <li id="page-item-${pageUrl}" class="contribution">
+    <li id="page-item-long-${pageUrl}" class="contribution">
         <span class="contribution-link">${pageHeader} #${pageIndex}</span>
-        <button class="copy-button" id="copy-button-${pageUrl}">
+        <button class="copy-button" id="copy-button-long-${pageUrl}">
         ${CopySvg}
         </button>
     </li>
 `;
 
 const ContributionShort = ({ pageIndex, pageUrl }) => `
-        <li id="page-item-${pageUrl}" class="contribution">
+        <li id="page-item-short-${pageUrl}" class="contribution">
             <span class="contribution-link">#${pageIndex}</span>
-            <button class="copy-button" id="copy-button-${pageUrl}">
+            <button class="copy-button" id="copy-button-short-${pageUrl}">
             ${CopySvg}
             </button>
         </li>
@@ -115,17 +119,30 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const pageUrl = e.currentTarget.id.split('copy-button-').slice(1).join('');
-    const pageItem = document.getElementById(`page-item-${pageUrl}`);
+    // Example: e.currentTarget.id is like 'copy-button-<long|short>-<pageUrl>
+    const buttonIdentifier =
+        e.currentTarget.id.split('copy-button-').slice(1).join('');
+    const [copyType, ...rest] = buttonIdentifier.split('-');
+    const pageUrl = rest.join('-');
+    const pageItem = document.getElementById(`page-item-${buttonIdentifier}`);
     const pageInfoText = pageItem.querySelector('span').innerText;
 
-    copyToClipboard(`[${pageInfoText}](${pageUrl})`);
+    const textToCopy = `[${pageInfoText}](${pageUrl})`;
+    copyToClipboard(textToCopy);
 
-    if (!state.recentCopies.some(({ pageUrl: pUrl }) => pUrl === pageUrl)) {
-        state.recentCopies.push(state.currentPage);
+    if ( !state.recentCopies.some(
+        p => p.pageUrl == pageUrl && p.copyType == copyType
+    )) {
+        state.recentCopies.push({
+            copyType,
+            copiedText: textToCopy,
+            ...state.currentPage,
+        });
     }
 
-    state.recentCopies.sort((a) => (a.pageUrl == pageUrl ? -1 : 1));
+    state.recentCopies.sort((a) => (
+        a.pageUrl == pageUrl && a.copyType == copyType ? -1 : 1)
+    );
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 
     render();

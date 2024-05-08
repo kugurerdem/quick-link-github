@@ -64,20 +64,23 @@ const App = (state) => {
 
 const CopyFromThisPage = (currentPage) => {
     const {pageHeader, pageIndex, pageUrl} = currentPage;
-    const longCopyText = `${pageHeader} #${pageIndex}`
-    const shortCopyText = `#${pageIndex}`
+    const longCopyText = `${pageHeader} #${pageIndex}`;
+    const shortCopyText = `#${pageIndex}`;
+
+    const contributions =
+        [longCopyText, shortCopyText].map(t =>
+            Contribution({
+                pageInfoText: t,
+                pageUrl,
+            })
+        ).join('')
+
+
     return  `
         <h1>Copy from this page</h1>
         <hr>
         <ul>
-            ${Contribution({
-                pageInfoText: longCopyText,
-                pageUrl,
-            })}
-            ${Contribution({
-                pageInfoText: shortCopyText,
-                pageUrl,
-            })}
+            ${contributions}
         </ul>
     `
 };

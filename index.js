@@ -90,7 +90,7 @@ const PreviouslyCopied = (recentCopies) => `
         </ol>
     `;
 
-const Contribution = ({ pageInfoText, pageUrl }) => {
+const Contribution = ({ pageInfoText, pageUrl, repoName }) => {
     const id = `${pageInfoText}-${pageUrl}`;
     return `
         <li
@@ -99,7 +99,10 @@ const Contribution = ({ pageInfoText, pageUrl }) => {
             data-page-url="${pageUrl}"
             data-info-text="${pageInfoText}"
         >
-            <span class="contribution-link">${pageInfoText}</span>
+            <span class="contribution-link">
+                <a href="${pageUrl}" target="_blank"> ${pageInfoText} </a>
+                ${repoName ? `<div class="repo-name"> ${repoName} </div>` : ''}
+            </span>
             <button class="copy-button" id="copy-button-${id}">
             ${CopySvg}
             </button>

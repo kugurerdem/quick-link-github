@@ -56,6 +56,10 @@ ol {
     padding-right: var(--space-md);
 }
 
+.repo-name {
+    font-size: 0.7rem;
+}
+
 .copy-button {
     background: none;
     border: none;
@@ -64,4 +68,9 @@ ol {
 .copy-button:hover {
     cursor: pointer;
     fill: var(--dark-grey);
+}
+
+a {
+    text-decoration: none;
+    color: #006400;
 }

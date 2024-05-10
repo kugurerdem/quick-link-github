@@ -53,6 +53,10 @@ ol {
 }
 
 .contribution-link {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 1em;
     padding-right: var(--space-md);
 }
 

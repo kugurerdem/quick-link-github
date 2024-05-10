@@ -95,7 +95,7 @@ const PreviouslyCopied = (recentCopies) => `
         </ol>
     `;
 
-const Contribution = ({ pageInfoText, pageUrl, repoName }) => {
+const Contribution = ({ pageInfoText, pageUrl, repoName, pageType }) => {
     const id = `${pageInfoText}-${pageUrl}`;
     return `
         <li
@@ -105,8 +105,11 @@ const Contribution = ({ pageInfoText, pageUrl, repoName }) => {
             data-info-text="${pageInfoText}"
         >
             <span class="contribution-link">
+                ${ pageType == 'issue' ? IssueSvg : PrSvg }
+                <div>
                 <a href="${pageUrl}" target="_blank"> ${pageInfoText} </a>
                 ${repoName ? `<div class="repo-name"> ${repoName} </div>` : ''}
+                </div>
             </span>
             <button class="copy-button" id="copy-button-${id}">
             ${state.recentCopyId == id ? CheckSvg : CopySvg}
@@ -129,6 +132,21 @@ const CopySvg = `
 const CheckSvg = `
     <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M17.2225 1.24213C17.6968 1.73041 17.6968 2.52338 17.2225 3.01166L7.50822 13.0117C7.03389 13.4999 6.26358 13.4999 5.78925 13.0117L0.932103 8.01166C0.457772 7.52338 0.457772 6.73041 0.932103 6.24213C1.40643 5.75385 2.17675 5.75385 2.65108 6.24213L6.65063 10.3554L15.5073 1.24213C15.9817 0.753845 16.752 0.753845 17.2263 1.24213H17.2225Z" fill="#1F883D"/>
+    </svg>
+`;
+
+const IssueSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="14">
+        <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256-96a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/>
+    </svg>
+`;
+
+const PrSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="14">
+        <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+
+        <path d="M305.8 2.1C314.4 5.9 320 14.5 320 24V64h16c70.7 0 128 57.3 128 128V358.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3V192c0-35.3-28.7-64-64-64H320v40c0 9.5-5.6 18.1-14.2 21.9s-18.8 2.3-25.8-4.1l-80-72c-5.1-4.6-7.9-11-7.9-17.8s2.9-13.3 7.9-17.8l80-72c7-6.3 17.2-7.9 25.8-4.1zM104 80A24 24 0 1 0 56 80a24 24 0 1 0 48 0zm8 73.3V358.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3V153.3C19.7 141 0 112.8 0 80C0 35.8 35.8 0 80 0s80 35.8 80 80c0 32.8-19.7 61-48 73.3zM104 432a24 24 0 1 0 -48 0 24 24 0 1 0 48 0zm328 24a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/>
     </svg>
 `;
 

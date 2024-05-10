@@ -96,19 +96,23 @@ const PreviouslyCopied = (recentCopies) => `
     `;
 
 const Contribution = ({ pageInfoText, pageUrl, repoName, pageType }) => {
-    const id = `${pageInfoText}-${pageUrl}`;
+    const id = escapeHTML(`${pageInfoText}-${pageUrl}`);
     return `
         <li
             id="page-item-${id}"
             class="contribution"
-            data-page-url="${pageUrl}"
-            data-info-text="${pageInfoText}"
+            data-page-url="${escapeHTML(pageUrl)}"
+            data-info-text="${escapeHTML(pageInfoText)}"
         >
             <span class="contribution-link">
                 ${ pageType == 'issue' ? IssueSvg : PrSvg }
                 <div>
-                <a href="${pageUrl}" target="_blank"> ${pageInfoText} </a>
-                ${repoName ? `<div class="repo-name"> ${repoName} </div>` : ''}
+                <a href="${pageUrl}" target="_blank">
+                    ${escapeHTML(pageInfoText)}
+                </a>
+                ${repoName
+                    ? `<div class="repo-name"> ${escapeHTML(repoName)} </div>`
+                    : ''}
                 </div>
             </span>
             <button class="copy-button" id="copy-button-${id}">
@@ -129,8 +133,8 @@ const onCopyClick = (e) => {
         e.currentTarget.id.split('copy-button-').slice(1).join('');
     const pageItem = document.getElementById(`page-item-${contributionId}`);
 
-    const pageUrl = pageItem.getAttribute('data-page-url');
-    const pageInfoText = pageItem.getAttribute('data-info-text');
+    const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
+    const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
 
     const textToCopy = `[${pageInfoText}](${pageUrl})`;
     copyToClipboard(textToCopy);
@@ -172,6 +176,25 @@ const copyToClipboard = (text) => {
 
     document.body.removeChild(textarea);
 };
+
+const escapeHTML = (str) => {
+    // ^ https://stackoverflow.com/a/7382028
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
+const unescapeHTML = (str) => {
+    return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+}
 
 document.addEventListener('DOMContentLoaded', init);
 

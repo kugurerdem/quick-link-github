@@ -71,10 +71,10 @@ const CopyFromThisPage = (currentPage) => {
 
     const contributions =
         [longCopyText, shortCopyText].map(t =>
-            Contribution({
-                pageInfoText: t,
-                pageUrl,
-            })
+            Contribution(
+                { pageInfoText: t, pageUrl },
+                'current',
+            ),
         ).join('')
 
 
@@ -91,18 +91,23 @@ const PreviouslyCopied = (recentCopies) => `
         <h1>Previously copied</h1>
         <hr>
         <ol>
-            ${recentCopies.map(Contribution).join('')}
+            ${recentCopies.map(c => Contribution(c, 'previous')).join('')}
         </ol>
     `;
 
-const Contribution = ({ pageInfoText, pageUrl, repoName, pageType }) => {
-    const id = escapeHTML(`${pageInfoText}-${pageUrl}`);
+const Contribution = (
+    { pageInfoText, pageUrl, repoName, pageType },
+    section,
+) => {
+    const contributionId = escapeHTML(`${pageInfoText}-${pageUrl}`);
+    const id = `${section}-${contributionId}`;
     return `
         <li
             id="page-item-${id}"
             class="contribution"
             data-page-url="${escapeHTML(pageUrl)}"
             data-info-text="${escapeHTML(pageInfoText)}"
+            data-section="${section}"
         >
             <span class="contribution-link">
                 ${ pageType == 'issue' ? IssueSvg : PrSvg }
@@ -129,12 +134,15 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const contributionId =
+    const id =
         e.currentTarget.id.split('copy-button-').slice(1).join('');
-    const pageItem = document.getElementById(`page-item-${contributionId}`);
+    const [section, ...restOfTheId] = id.split('-');
+    const contributionId = restOfTheId.join('-');
+    const pageItem = document.getElementById(`page-item-${id}`);
 
     const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
     const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
+
 
     const textToCopy = `[${pageInfoText}](${pageUrl})`;
     copyToClipboard(textToCopy);
@@ -153,7 +161,7 @@ const onCopyClick = (e) => {
         (a) => (a.contributionId == contributionId ? -1 : 1));
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 
-    state.recentCopyId = contributionId;
+    state.recentCopyId = id;
     setTimeout(() => {
         state.recentCopyId = null;
         render();

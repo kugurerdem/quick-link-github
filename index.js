@@ -4,9 +4,11 @@ const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+$/;
 
 const titleDelimiter = String.fromCharCode(183);
 
+
 const state = {
     currentPage: {},
     recentCopies: [],
+    recentCopiesMaxLength: 10,
 
     recentCopyId: null,
 };
@@ -159,6 +161,8 @@ const onCopyClick = (e) => {
 
     state.recentCopies.sort(
         (a) => (a.contributionId == contributionId ? -1 : 1));
+    state.recentCopies =
+        state.recentCopies.slice(0, state.recentCopiesMaxLength);
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 
     state.recentCopyId = id;

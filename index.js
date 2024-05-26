@@ -1,6 +1,6 @@
 const { assign } = Object;
 
-const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+$/;
+const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*$/;
 
 const titleDelimiter = String.fromCharCode(183);
 

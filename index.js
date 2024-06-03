@@ -1,9 +1,8 @@
 const { assign } = Object;
 
-const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+$/;
+const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*$/;
 
 const titleDelimiter = String.fromCharCode(183);
-
 
 const state = {
     currentPage: {},
@@ -63,7 +62,7 @@ const App = (state) => {
     return [
         state.currentPage.pageType && CopyFromThisPage(state.currentPage),
         PreviouslyCopied(state.recentCopies),
-    ].filter(Boolean);
+    ].filter(Boolean).join('')
 };
 
 const CopyFromThisPage = (currentPage) => {
@@ -91,7 +90,7 @@ const CopyFromThisPage = (currentPage) => {
 
 const PreviouslyCopied = (recentCopies) => `
         <h1>Previously copied</h1>
-        <hr>
+        <hr class="previously-copied-hr">
         <ol>
             ${recentCopies.map(c => Contribution(c, 'previous')).join('')}
         </ol>
@@ -103,6 +102,25 @@ const Contribution = (
 ) => {
     const contributionId = escapeHTML(`${pageInfoText}-${pageUrl}`);
     const id = `${section}-${contributionId}`;
+
+    /**
+     * Return the icon for the contribution based on the page type.
+     * 
+     * We don't need to show the icon for the current page, it should be very
+     * obvious if the user has a PR or an issue page open. But we need to 
+     * show the icon for the previously copied contributions, as it's
+     * difficult to tell if the item is a PR or an issue.
+     */
+    function icon() {
+        if ( section === 'current' ) {
+            return '';
+        }
+
+        const icon = pageType == 'issue' ? IssueSvg : PrSvg;
+
+        return '<span class="contribution-icon">' + icon + '</span>';
+    }
+
     return `
         <li
             id="page-item-${id}"
@@ -111,20 +129,20 @@ const Contribution = (
             data-info-text="${escapeHTML(pageInfoText)}"
             data-section="${section}"
         >
-            <span class="contribution-link">
-                ${ pageType == 'issue' ? IssueSvg : PrSvg }
-                <div>
-                <a href="${pageUrl}" target="_blank">
+            <div class="contribution-info">
+                ${icon()}
+                <a href="${pageUrl}" class="contribution-link" target="_blank">
                     ${escapeHTML(pageInfoText)}
+                    ${repoName
+                        ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
+                        : ''}
                 </a>
-                ${repoName
-                    ? `<div class="repo-name"> ${escapeHTML(repoName)} </div>`
-                    : ''}
-                </div>
-            </span>
-            <button class="copy-button" id="copy-button-${id}">
-            ${state.recentCopyId == id ? CheckSvg : CopySvg}
-            </button>
+            </div>
+            <div class="contribution-actions">
+                <button class="copy-button" id="copy-button-${id}">
+                ${state.recentCopyId == id ? CheckSvg : CopySvg}
+                </button>
+            </div>
         </li>
     `
 }

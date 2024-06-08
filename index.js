@@ -103,9 +103,9 @@ const PreviouslyCopied = (recentCopies) => `
     <section>
         <h2>Previously copied</h2>
         <hr class="previously-copied-hr">
-        <ol>
-            ${recentCopies.map(c => Contribution(c, 'previous')).join('')}
-        </ol>
+        ${recentCopies.length > 0
+        ? `<ol>${recentCopies.map(c => Contribution(c, 'previous')).join('')}</ol>`
+        : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'}
     </section>
     `;
 

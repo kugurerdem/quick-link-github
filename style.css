@@ -108,6 +108,12 @@ a {
     margin-bottom: var(--space-md);
 }
 
+.no-history-message {
+    color: var(--dark-grey);
+    font-size: var(--font-size-normal);
+    text-align: center;
+}
+
 footer {
     display: flex;
 }

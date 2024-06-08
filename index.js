@@ -62,11 +62,20 @@ const App = (state) => {
     return [
         state.currentPage.pageType && CopyFromThisPage(state.currentPage),
         PreviouslyCopied(state.recentCopies),
+        Footer(),
     ].filter(Boolean).join('')
 };
 
+const Footer = () => `
+    <hr>
+    <footer>
+        <h1 class="footer-title"><a href="https://github.com/kugurerdem/quick-link-github/" target="_blank">Quick Link GitHub</a></h1>
+        <button class="clear-history">Clear history</button>
+    </footer>
+`;
+
 const CopyFromThisPage = (currentPage) => {
-    const {pageHeader, pageIndex, pageUrl} = currentPage;
+    const { pageHeader, pageIndex, pageUrl } = currentPage;
     const longCopyText = `${pageHeader} #${pageIndex}`;
     const shortCopyText = `#${pageIndex}`;
 
@@ -79,21 +88,25 @@ const CopyFromThisPage = (currentPage) => {
         ).join('')
 
 
-    return  `
-        <h1>Copy from this page</h1>
-        <hr>
-        <ul>
-            ${contributions}
-        </ul>
+    return `
+        <section>
+            <h2>Copy from this page</h2>
+            <hr>
+            <ul>
+                ${contributions}
+            </ul>
+        </section>
     `
 };
 
 const PreviouslyCopied = (recentCopies) => `
-        <h1>Previously copied</h1>
+    <section>
+        <h2>Previously copied</h2>
         <hr class="previously-copied-hr">
         <ol>
             ${recentCopies.map(c => Contribution(c, 'previous')).join('')}
         </ol>
+    </section>
     `;
 
 const Contribution = (
@@ -112,7 +125,7 @@ const Contribution = (
      * difficult to tell if the item is a PR or an issue.
      */
     function icon() {
-        if ( section === 'current' ) {
+        if (section === 'current') {
             return '';
         }
 
@@ -134,14 +147,14 @@ const Contribution = (
                 <a href="${pageUrl}" class="contribution-link" target="_blank">
                     ${escapeHTML(pageInfoText)}
                     ${repoName
-                        ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
-                        : ''}
+            ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
+            : ''}
                 </a>
             </div>
             <div class="contribution-actions">
                 <button class="copy-button" id="copy-button-${id}"
                     ${state.recentCopyId && state.recentCopyId != id
-                        ? 'disabled' : ''}>
+            ? 'disabled' : ''}>
                 ${state.recentCopyId == id ? CheckSvg : CopySvg}
                 </button>
             </div>
@@ -153,6 +166,10 @@ const setListeners = () => {
     document
         .querySelectorAll('.copy-button')
         .forEach((button) => button.addEventListener('click', onCopyClick));
+
+    document
+        .querySelector('.clear-history')
+        .addEventListener('click', onClearHistoryClick);
 };
 
 const onCopyClick = (e) => {
@@ -177,7 +194,7 @@ const onCopyClick = (e) => {
 
     render();
 
-    if ( !state.recentCopies.some(
+    if (!state.recentCopies.some(
         p => p.contributionId == contributionId
     )) {
         state.recentCopies.push({
@@ -192,6 +209,12 @@ const onCopyClick = (e) => {
     state.recentCopies =
         state.recentCopies.slice(0, state.recentCopiesMaxLength);
     chrome.storage.local.set({ recentCopies: state.recentCopies });
+};
+
+const onClearHistoryClick = () => {
+    state.recentCopies = [];
+    chrome.storage.local.set({ recentCopies: state.recentCopies });
+    render();
 };
 
 const copyToClipboard = (text) => {

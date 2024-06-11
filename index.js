@@ -139,7 +139,9 @@ const Contribution = (
                 </a>
             </div>
             <div class="contribution-actions">
-                <button class="copy-button" id="copy-button-${id}">
+                <button class="copy-button" id="copy-button-${id}"
+                    ${state.recentCopyId && state.recentCopyId != id
+                        ? 'disabled' : ''}>
                 ${state.recentCopyId == id ? CheckSvg : CopySvg}
                 </button>
             </div>

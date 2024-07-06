@@ -139,7 +139,9 @@ const Contribution = (
                 </a>
             </div>
             <div class="contribution-actions">
-                <button class="copy-button" id="copy-button-${id}">
+                <button class="copy-button" id="copy-button-${id}"
+                    ${state.recentCopyId && state.recentCopyId != id
+                        ? 'disabled' : ''}>
                 ${state.recentCopyId == id ? CheckSvg : CopySvg}
                 </button>
             </div>
@@ -167,6 +169,14 @@ const onCopyClick = (e) => {
     const textToCopy = `[${pageInfoText}](${pageUrl})`;
     copyToClipboard(textToCopy);
 
+    state.recentCopyId = id;
+    setTimeout(() => {
+        state.recentCopyId = null;
+        render();
+    }, 1000);
+
+    render();
+
     if ( !state.recentCopies.some(
         p => p.contributionId == contributionId
     )) {
@@ -182,14 +192,6 @@ const onCopyClick = (e) => {
     state.recentCopies =
         state.recentCopies.slice(0, state.recentCopiesMaxLength);
     chrome.storage.local.set({ recentCopies: state.recentCopies });
-
-    state.recentCopyId = id;
-    setTimeout(() => {
-        state.recentCopyId = null;
-        render();
-    }, 1000);
-
-    render();
 };
 
 const copyToClipboard = (text) => {

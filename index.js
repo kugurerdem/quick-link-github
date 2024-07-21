@@ -90,8 +90,8 @@ const EmptyState = () => `
 
 const Footer = () => `
     <hr>
-    <footer>
-        <h1 class="footer-title"><a href="https://github.com/kugurerdem/quick-link-github/" target="_blank">Quick Link GitHub</a></h1>
+    <footer class="footer-hr">
+        <a href="https://github.com/kugurerdem/quick-link-github/" target="_blank" class="footer-title">Quick Link GitHub</a>
         <button class="clear-history">Clear history</button>
     </footer>
 `;
@@ -124,7 +124,7 @@ const CopyFromThisPage = (currentPage) => {
 const PreviouslyCopied = (recentCopies) => `
     <section>
         <h2>Previously copied</h2>
-        <hr class="previously-copied-hr">
+        <hr>
         ${recentCopies.length > 0
         ? `<ol>${recentCopies.map(c => Contribution(c, 'previous')).join('')}</ol>`
         : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'}

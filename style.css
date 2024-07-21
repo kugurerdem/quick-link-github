@@ -1,7 +1,7 @@
 html {
-    font-size: 16px;
     /* rem is calculated based on this value. */
-    width: 450px;
+    font-size: 16px;
+    font-family: sans-serif;
 }
 
 :root {
@@ -27,11 +27,13 @@ html {
 }
 
 body {
-    padding: var(--space-md) var(--space-md);
+    padding: var(--space-lg) var(--space-lg);
+    width: 450px;
 }
 
 hr {
     border: 1px solid var(--light-grey);
+    margin-bottom: var(--space-md);
 }
 
 h2 {
@@ -100,9 +102,6 @@ a {
     fill: var(--dark-grey);
 }
 
-.previously-copied-hr {
-    margin-bottom: var(--space-md);
-}
 
 .no-history-message {
     color: var(--dark-grey);
@@ -112,25 +111,32 @@ a {
 
 footer {
     display: flex;
+    align-items: center;
 }
 
-.footer-title {
-    padding: 0;
-    margin: 0;
+.footer-hr {
+    margin-top: var(--space-md);
+}
+
+footer button {
+    background: none;
+    border: none;
+    color: var(--grey);
     font-size: var(--font-size-small);
-    color: var(--grey);
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.footer-title a {
+footer a {
     color: var(--grey);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .clear-history {
     border: none;
     background: none;
-    color: var(--grey);
-    font-weight: 600;
-    font-size: var(--font-size-small);
 }
 
 .empty-state img {

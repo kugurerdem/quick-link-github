@@ -36,14 +36,14 @@ const init = async () => {
         const pageType = pageUrl.includes('issue') ? 'issue' : 'pr';
 
         assign(state.currentPage, {
+            pageTitle,
+            pageUrl,
             pageHeader,
             pageType,
             pageIndex,
             repoName,
         });
     }
-
-    assign(state.currentPage, { pageTitle, pageUrl });
 
     state.recentCopies =
         (await chrome.storage.local.get('recentCopies'))['recentCopies'] || [];
@@ -59,12 +59,29 @@ const render = (id, component, ...componentArgs) => {
 };
 
 const App = (state) => {
+    if (!state.currentPage.pageTitle && state.recentCopies.length === 0) {
+        return [
+            EmptyState(),
+            Footer()
+        ]
+    }
+
     return [
         state.currentPage.pageType && CopyFromThisPage(state.currentPage),
         PreviouslyCopied(state.recentCopies),
         Footer(),
     ].filter(Boolean).join('')
 };
+
+const EmptyState = () => `
+    <section class="empty-state">
+        <h2>Welcome to Quick Link GitHub!</h2>
+        <p>This extension offers you a quick way to copy formatted links and remembers them for later use.</p>
+        <p>Go to any GitHub issue or PR page, click on the extension icon and see the list of formatted links to be copied.</p>
+        <img src="./screenshot.png" />
+    </section>
+`;
+
 
 const Footer = () => `
     <hr>

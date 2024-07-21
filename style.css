@@ -12,18 +12,18 @@ html {
     --blue: #0366D6;
 
     /* Spacing Scale */
-    --space-xs: 0.25rem; /* Extra small spacing for tight groupings (4px) */
-    --space-sm: 0.5rem; /* Small spacing for closer elements (8px) */
-    --space-md: 1rem; /* Base spacing for most uses (16px) */
-    --space-lg: 1.5rem; /* Medium spacing for grouping larger blocks (24px) */
-    --space-xl: 2rem; /* Large spacing for wider separations (32px) */
-    --space-xxl: 3rem; /* Extra large spacing for major breaks in content (48px) */
-    --space-ultra: 4rem; /* Ultra spacing for large layout divisions (64px) */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+    --space-ultra: 4rem;
 
     /* Font Sizes */
-    --font-size-small: 0.75rem; /* Small text for less important information (12px) */
-    --font-size-normal: 0.825rem; /* Normal text for main content (14px) */
-    --font-size-large: 1.25rem; /* Large text for headings or important clickable items (20px) */
+    --font-size-small: 0.75rem;
+    --font-size-normal: 0.825rem;
+    --font-size-large: 1.25rem;
 }
 
 body {
@@ -32,10 +32,6 @@ body {
 
 hr {
     border: 1px solid var(--light-grey);
-}
-
-section {
-    margin-top: var(--space-md);
 }
 
 h2 {
@@ -135,4 +131,8 @@ footer {
     color: var(--grey);
     font-weight: 600;
     font-size: var(--font-size-small);
+}
+
+.empty-state img {
+    width: 100%;
 }

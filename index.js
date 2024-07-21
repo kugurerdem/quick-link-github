@@ -27,13 +27,18 @@ const init = async () => {
 
         const [_pageIndex, repoName] = parts.slice(-2);
         const pageIndex = _pageIndex.match(/\d+/)[0];
-        const pageHeader = parts.slice(0, -2).join(titleDelimiter);
+        let pageHeader = parts.slice(0, -2).join(titleDelimiter).trim();
         // ^ Since issue or pr name can contain the delimiter character,
         // we split the title by the delimiter and take the last two
         // parts as the page index and repo name.
         // And then we join the rest of the parts as the page title.
 
         const pageType = pageUrl.includes('issue') ? 'issue' : 'pr';
+
+        // Get rid of the author name in the PR title.
+        if (pageType === 'pr') {
+            pageHeader = pageHeader.replace(/ by \w+$/, '');
+        }
 
         assign(state.currentPage, {
             pageTitle,

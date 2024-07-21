@@ -68,7 +68,7 @@ const App = (state) => {
         return [
             EmptyState(),
             Footer()
-        ]
+        ].filter(Boolean).join('');
     }
 
     return [

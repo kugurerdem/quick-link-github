@@ -25,7 +25,7 @@ const init = async () => {
         // the form <issue or pr name> ' · ' <page index> ' · ' <repo
         // name>.
 
-        const [_pageIndex, repoName] = parts.slice(-2);
+        const [_pageIndex, repoName] = parts.slice(1, 3);
         const pageIndex = _pageIndex.match(/\d+/)[0];
         let pageHeader = parts.slice(0, -2).join(titleDelimiter).trim();
         // ^ Since issue or pr name can contain the delimiter character,

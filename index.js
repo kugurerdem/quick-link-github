@@ -25,9 +25,9 @@ const init = async () => {
         // the form <issue or pr name> ' · ' <page index> ' · ' <repo
         // name>.
 
-        const [_pageIndex, repoName] = parts.slice(-2);
+        const [_pageIndex, repoName] = parts.slice(1, 3);
         const pageIndex = _pageIndex.match(/\d+/)[0];
-        const pageHeader = parts.slice(0, -2).join(titleDelimiter);
+        let pageHeader = parts.slice(0, -2).join(titleDelimiter).trim();
         // ^ Since issue or pr name can contain the delimiter character,
         // we split the title by the delimiter and take the last two
         // parts as the page index and repo name.
@@ -35,15 +35,20 @@ const init = async () => {
 
         const pageType = pageUrl.includes('issue') ? 'issue' : 'pr';
 
+        // Get rid of the author name in the PR title.
+        if (pageType === 'pr') {
+            pageHeader = pageHeader.replace(/ by \w+$/, '');
+        }
+
         assign(state.currentPage, {
+            pageTitle,
+            pageUrl,
             pageHeader,
             pageType,
             pageIndex,
             repoName,
         });
     }
-
-    assign(state.currentPage, { pageTitle, pageUrl });
 
     state.recentCopies =
         (await chrome.storage.local.get('recentCopies'))['recentCopies'] || [];
@@ -59,14 +64,40 @@ const render = (id, component, ...componentArgs) => {
 };
 
 const App = (state) => {
+    if (!state.currentPage.pageTitle && state.recentCopies.length === 0) {
+        return [
+            EmptyState(),
+            Footer()
+        ].filter(Boolean).join('');
+    }
+
     return [
         state.currentPage.pageType && CopyFromThisPage(state.currentPage),
         PreviouslyCopied(state.recentCopies),
+        Footer(),
     ].filter(Boolean).join('')
 };
 
+const EmptyState = () => `
+    <section class="empty-state">
+        <h2>Welcome to Quick Link GitHub!</h2>
+        <p>This extension offers you a quick way to copy formatted links and remembers them for later use.</p>
+        <p>Go to any GitHub issue or PR page, click on the extension icon and see the list of formatted links to be copied.</p>
+        <img src="./screenshot.png" />
+    </section>
+`;
+
+
+const Footer = () => `
+    <hr>
+    <footer class="footer-hr">
+        <a href="https://github.com/kugurerdem/quick-link-github/" target="_blank" class="footer-title">Quick Link GitHub</a>
+        <button class="clear-history">Clear history</button>
+    </footer>
+`;
+
 const CopyFromThisPage = (currentPage) => {
-    const {pageHeader, pageIndex, pageUrl} = currentPage;
+    const { pageHeader, pageIndex, pageUrl } = currentPage;
     const longCopyText = `${pageHeader} #${pageIndex}`;
     const shortCopyText = `#${pageIndex}`;
 
@@ -79,21 +110,25 @@ const CopyFromThisPage = (currentPage) => {
         ).join('')
 
 
-    return  `
-        <h1>Copy from this page</h1>
-        <hr>
-        <ul>
-            ${contributions}
-        </ul>
+    return `
+        <section>
+            <h2>Copy from this page</h2>
+            <hr>
+            <ul>
+                ${contributions}
+            </ul>
+        </section>
     `
 };
 
 const PreviouslyCopied = (recentCopies) => `
-        <h1>Previously copied</h1>
-        <hr class="previously-copied-hr">
-        <ol>
-            ${recentCopies.map(c => Contribution(c, 'previous')).join('')}
-        </ol>
+    <section>
+        <h2>Previously copied</h2>
+        <hr>
+        ${recentCopies.length > 0
+        ? `<ol>${recentCopies.map(c => Contribution(c, 'previous')).join('')}</ol>`
+        : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'}
+    </section>
     `;
 
 const Contribution = (
@@ -112,7 +147,7 @@ const Contribution = (
      * difficult to tell if the item is a PR or an issue.
      */
     function icon() {
-        if ( section === 'current' ) {
+        if (section === 'current') {
             return '';
         }
 
@@ -134,14 +169,14 @@ const Contribution = (
                 <a href="${pageUrl}" class="contribution-link" target="_blank">
                     ${escapeHTML(pageInfoText)}
                     ${repoName
-                        ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
-                        : ''}
+            ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
+            : ''}
                 </a>
             </div>
             <div class="contribution-actions">
                 <button class="copy-button" id="copy-button-${id}"
                     ${state.recentCopyId && state.recentCopyId != id
-                        ? 'disabled' : ''}>
+            ? 'disabled' : ''}>
                 ${state.recentCopyId == id ? CheckSvg : CopySvg}
                 </button>
             </div>
@@ -153,6 +188,10 @@ const setListeners = () => {
     document
         .querySelectorAll('.copy-button')
         .forEach((button) => button.addEventListener('click', onCopyClick));
+
+    document
+        .querySelector('.clear-history')
+        .addEventListener('click', onClearHistoryClick);
 };
 
 const onCopyClick = (e) => {
@@ -177,7 +216,7 @@ const onCopyClick = (e) => {
 
     render();
 
-    if ( !state.recentCopies.some(
+    if (!state.recentCopies.some(
         p => p.contributionId == contributionId
     )) {
         state.recentCopies.push({
@@ -192,6 +231,12 @@ const onCopyClick = (e) => {
     state.recentCopies =
         state.recentCopies.slice(0, state.recentCopiesMaxLength);
     chrome.storage.local.set({ recentCopies: state.recentCopies });
+};
+
+const onClearHistoryClick = () => {
+    state.recentCopies = [];
+    chrome.storage.local.set({ recentCopies: state.recentCopies });
+    render();
 };
 
 const copyToClipboard = (text) => {

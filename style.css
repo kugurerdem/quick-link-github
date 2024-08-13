@@ -1,7 +1,7 @@
 html {
-    font-size: 16px;
     /* rem is calculated based on this value. */
-    width: 450px;
+    font-size: 16px;
+    font-family: sans-serif;
 }
 
 :root {
@@ -13,38 +13,30 @@ html {
 
     /* Spacing Scale */
     --space-xs: 0.25rem;
-    /* Extra small spacing for tight groupings (4px) */
     --space-sm: 0.5rem;
-    /* Small spacing for closer elements (8px) */
     --space-md: 1rem;
-    /* Base spacing for most uses (16px) */
     --space-lg: 1.5rem;
-    /* Medium spacing for grouping larger blocks (24px) */
     --space-xl: 2rem;
-    /* Large spacing for wider separations (32px) */
     --space-xxl: 3rem;
-    /* Extra large spacing for major breaks in content (48px) */
     --space-ultra: 4rem;
-    /* Ultra spacing for large layout divisions (64px) */
 
     /* Font Sizes */
     --font-size-small: 0.75rem;
-    /* Small text for less important information (12px) */
     --font-size-normal: 0.825rem;
-    /* Normal text for main content (14px) */
     --font-size-large: 1.25rem;
-    /* Large text for headings or important clickable items (20px) */
 }
 
 body {
-    padding: var(--space-xl);
+    padding: var(--space-lg) var(--space-lg);
+    width: 450px;
 }
 
 hr {
     border: 1px solid var(--light-grey);
+    margin-bottom: var(--space-md);
 }
 
-h1 {
+h2 {
     padding: 0;
     margin: 0;
     font-size: var(--font-size-large);
@@ -110,6 +102,43 @@ a {
     fill: var(--dark-grey);
 }
 
-.previously-copied-hr {
-    margin-bottom: var(--space-md);
+
+.no-history-message {
+    color: var(--dark-grey);
+    font-size: var(--font-size-normal);
+    text-align: center;
+}
+
+footer {
+    display: flex;
+    align-items: center;
+}
+
+.footer-hr {
+    margin-top: var(--space-md);
+}
+
+footer button {
+    background: none;
+    border: none;
+    color: var(--grey);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+footer a {
+    color: var(--grey);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.clear-history {
+    border: none;
+    background: none;
+}
+
+.empty-state img {
+    width: 100%;
 }

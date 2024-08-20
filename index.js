@@ -37,7 +37,7 @@ const init = async () => {
 
         // Get rid of the author name in the PR title.
         if (pageType === 'pr') {
-            pageHeader = pageHeader.replace(/ by \w+$/, '');
+            pageHeader = pageHeader.replace(/ by.*$/, '');
         }
 
         assign(state.currentPage, {

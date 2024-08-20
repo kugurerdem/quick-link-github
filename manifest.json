@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Quick Links for Github!",
+    "name": "Quick Link Github",
     "description": "Keeps record of the PR and Issues.",
     "version": "1.0",
     "action": {

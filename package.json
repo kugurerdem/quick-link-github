@@ -7,12 +7,14 @@
     },
     "scripts": {
         "lint": "prettier --check .",
-        "lint:fix": "prettier --write ."
+        "lint:fix": "prettier --write .",
+        "start:firefox": "web-ext run --browser-console --source-dir ./"
     },
     "author": "",
     "license": "ISC",
     "description": "",
     "devDependencies": {
-        "prettier": "^3.2.5"
+        "prettier": "^3.2.5",
+        "web-ext": "^8.3.0"
     }
 }

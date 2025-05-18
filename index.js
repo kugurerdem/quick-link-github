@@ -57,11 +57,13 @@ const init = async () => {
     render();
 };
 
-const render = (id, component, ...componentArgs) => {
-    const root = document.getElementById(id || 'root');
-    root.innerHTML = component ? component(...componentArgs) : App(state);
+const render = () => {
+    const root = document.getElementById('root');
+    root.innerHTML = App(state);
+
     setListeners();
 };
+
 
 const App = (state) => {
     if (!state.currentPage.pageTitle && state.recentCopies.length === 0) {
@@ -226,10 +228,13 @@ const onCopyClick = (e) => {
         });
     }
 
-    state.recentCopies.sort(
-        (a) => (a.contributionId == contributionId ? -1 : 1));
+    const index = state.recentCopies.findIndex(p => p.contributionId == contributionId);
+
+    state.recentCopies.unshift(...state.recentCopies.splice(index, 1))
+
     state.recentCopies =
         state.recentCopies.slice(0, state.recentCopiesMaxLength);
+
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 };
 
@@ -273,8 +278,6 @@ const unescapeHTML = (str) => {
         .replace(/&#39;/g, "'")
 }
 
-document.addEventListener('DOMContentLoaded', init);
-
 const CopySvg = `
     <svg xmlns="http://www.w3.org/2000/svg"
         width="17" height="22"
@@ -307,3 +310,4 @@ const PrSvg = `
     </svg>
 `;
 
+document.addEventListener('DOMContentLoaded', init);

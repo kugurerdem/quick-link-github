@@ -3,7 +3,7 @@
 Guide: https://blog.cemunalan.com.tr/2024/10/16/quick-link-github-for-firefox-and-chrome/
 
 ## Development
-Instsall dev dependencies:
+Install dev dependencies:
 `npm install`
 
 If using Firefox, you can run `npm run start:firefox` to start a test session.

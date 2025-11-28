@@ -1,4 +1,4 @@
-# Impulse Blocker
+# Quick Link GitHub
 
 Guide: https://blog.cemunalan.com.tr/2024/10/16/quick-link-github-for-firefox-and-chrome/
 

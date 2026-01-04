@@ -91,14 +91,14 @@ const EmptyState = () => `
 const Footer = () => `
     <hr>
     <section class="format-legend">
-        <div class="legend-item" title="Markdown format: [text](url)">
-            ${MarkdownSvg} <span>MD</span>
+        <div class="legend-item">
+            ${MarkdownSvg} <span>MD: [text](url)</span>
         </div>
-        <div class="legend-item" title="Slack format: <url|text>">
-            ${SlackSvg} <span>Slack</span>
+        <div class="legend-item">
+            ${SlackSvg} <span>Slack: &lt;url|text&gt;</span>
         </div>
-        <div class="legend-item" title="Google Docs: Rich text link">
-            ${DocsSvg} <span>Docs</span>
+        <div class="legend-item">
+            ${DocsSvg} <span>Docs: Rich Link</span>
         </div>
     </section>
     <footer class="footer-hr">

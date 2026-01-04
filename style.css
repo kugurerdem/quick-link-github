@@ -177,10 +177,11 @@ footer a {
 .format-legend {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: var(--space-md);
     margin-bottom: var(--space-md);
     color: var(--grey);
-    font-size: var(--font-size-small);
+    font-size: 0.7rem;
     font-weight: 600;
 }
 
@@ -188,7 +189,7 @@ footer a {
     display: flex;
     align-items: center;
     gap: 4px;
-    cursor: help;
+    cursor: default;
 }
 
 .legend-item svg {

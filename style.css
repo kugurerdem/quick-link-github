@@ -92,15 +92,32 @@ a {
     margin: 0;
 }
 
+.contribution-actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
 .copy-button {
-    min-height: 30px;
-    background: none;
-    border: none;
+    background: white;
+    border: 1px solid var(--light-grey);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: var(--font-size-small);
+    color: var(--dark-grey);
+    cursor: pointer;
+    min-width: 40px;
 }
 
 .copy-button:hover {
-    cursor: pointer;
+    background-color: var(--light-grey);
+    border-color: var(--grey);
     fill: var(--dark-grey);
+}
+
+.copy-button:disabled {
+    cursor: default;
+    opacity: 0.6;
+    background-color: var(--light-grey);
 }
 
 .no-history-message {

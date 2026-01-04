@@ -154,6 +154,22 @@ const Contribution = (
         return '<span class="contribution-icon">' + icon + '</span>';
     }
 
+    const isRecentlyCopied =
+        state.recentCopyId && state.recentCopyId.startsWith(id);
+    const copiedType = isRecentlyCopied
+        ? state.recentCopyId.split('__')[1]
+        : null;
+
+    const createBtn = (type, label) => `
+        <button class="copy-button"
+            data-id="${id}"
+            data-type="${type}"
+            ${isRecentlyCopied ? 'disabled' : ''}
+        >
+            ${copiedType === type ? 'Copied!' : label}
+        </button>
+    `;
+
     return `
         <li
             id="page-item-${id}"
@@ -174,14 +190,9 @@ const Contribution = (
                 </a>
             </div>
             <div class="contribution-actions">
-                <button class="copy-button" id="copy-button-${id}"
-                    ${
-                        state.recentCopyId && state.recentCopyId != id
-                            ? 'disabled'
-                            : ''
-                    }>
-                ${state.recentCopyId == id ? CheckSvg : CopySvg}
-                </button>
+                ${createBtn('md', 'MD')}
+                ${createBtn('slack', 'Slack')}
+                ${createBtn('docs', 'Docs')}
             </div>
         </li>
     `;
@@ -198,24 +209,39 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const id = e.currentTarget.id.split('copy-button-').slice(1).join('');
-    const [section, ...restOfTheId] = id.split('-');
-    const contributionId = restOfTheId.join('-');
-    const pageItem = document.getElementById(`page-item-${id}`);
+    const button = e.currentTarget;
+    const id = button.getAttribute('data-id');
+    const type = button.getAttribute('data-type');
+    const fullId = `${id}__${type}`;
 
+    const pageItem = document.getElementById(`page-item-${id}`);
     const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
     const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
 
-    const textToCopy = `[${pageInfoText}](${pageUrl})`;
-    copyToClipboard(textToCopy);
+    let textToCopy = '';
+    let htmlToCopy = null;
 
-    state.recentCopyId = id;
+    if (type === 'md') {
+        textToCopy = `[${pageInfoText}](${pageUrl})`;
+    } else if (type === 'slack') {
+        textToCopy = `<${pageUrl}|${pageInfoText}>`;
+    } else if (type === 'docs') {
+        textToCopy = `${pageInfoText}`;
+        htmlToCopy = `<a href="${pageUrl}">${pageInfoText}</a>`;
+    }
+
+    copyToClipboard(textToCopy, htmlToCopy);
+
+    state.recentCopyId = fullId;
     setTimeout(() => {
         state.recentCopyId = null;
         render();
     }, 1000);
 
     render();
+
+    const [section, ...restOfTheId] = id.split('-');
+    const contributionId = restOfTheId.join('-');
 
     if (!state.recentCopies.some((p) => p.contributionId == contributionId)) {
         state.recentCopies.push({
@@ -245,19 +271,17 @@ const onClearHistoryClick = () => {
     render();
 };
 
-const copyToClipboard = (text) => {
-    const textarea = document.createElement('textarea');
-
-    textarea.value = text;
-    textarea.style.position = 'absolute';
-    textarea.style.left = '-9999px';
-
-    document.body.appendChild(textarea);
-
-    textarea.select();
+const copyToClipboard = (text, html) => {
+    const listener = (e) => {
+        e.clipboardData.setData('text/plain', text);
+        if (html) {
+            e.clipboardData.setData('text/html', html);
+        }
+        e.preventDefault();
+    };
+    document.addEventListener('copy', listener);
     document.execCommand('copy');
-
-    document.body.removeChild(textarea);
+    document.removeEventListener('copy', listener);
 };
 
 const escapeHTML = (str) => {
@@ -278,23 +302,6 @@ const unescapeHTML = (str) => {
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'");
 };
-
-const CopySvg = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-        width="17" height="22"
-        fill="none"
-    >
-        <path
-            fill="#7A7A7A"
-            d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"
-        />
-    </svg>`;
-
-const CheckSvg = `
-    <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.2225 1.24213C17.6968 1.73041 17.6968 2.52338 17.2225 3.01166L7.50822 13.0117C7.03389 13.4999 6.26358 13.4999 5.78925 13.0117L0.932103 8.01166C0.457772 7.52338 0.457772 6.73041 0.932103 6.24213C1.40643 5.75385 2.17675 5.75385 2.65108 6.24213L6.65063 10.3554L15.5073 1.24213C15.9817 0.753845 16.752 0.753845 17.2263 1.24213H17.2225Z" fill="#1F883D"/>
-    </svg>
-`;
 
 const IssueSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="14">

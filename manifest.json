@@ -10,5 +10,10 @@
         "48": "icon48.png",
         "128": "icon128.png"
     },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "quick-link-github@cemunalan.com.tr"
+        }
+    },
     "permissions": ["activeTab", "storage"]
 }

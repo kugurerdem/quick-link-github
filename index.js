@@ -94,18 +94,6 @@ const Footer = () => `
         <a href="https://github.com/kugurerdem/quick-link-github/" target="_blank" class="footer-title">Quick Link GitHub</a>
         <button class="clear-history">Clear history</button>
     </footer>
-    <hr />
-    <section class="format-legend">
-        <div class="legend-item">
-            ${MarkdownSvg} <span>MD: [text](url)</span>
-        </div>
-        <div class="legend-item">
-            ${SlackSvg} <span>Slack: &lt;url|text&gt;</span>
-        </div>
-        <div class="legend-item">
-            ${DocsSvg} <span>Docs: Rich Link</span>
-        </div>
-    </section>
 `;
 
 const CopyFromThisPage = (currentPage) => {
@@ -203,9 +191,14 @@ const Contribution = (
                 </a>
             </div>
             <div class="contribution-actions">
-                ${createBtn('md', 'MD', MarkdownSvg, 'Copy as Markdown')}
-                ${createBtn('slack', 'Slack', SlackSvg, 'Copy for Slack')}
-                ${createBtn('docs', 'Docs', DocsSvg, 'Copy for Google Docs')}
+                ${createBtn('md', 'MD', MarkdownSvg, 'Markdown: [Title](URL)')}
+                ${createBtn('slack', 'Slack', SlackSvg, 'Slack: <URL|Title>')}
+                ${createBtn(
+                    'docs',
+                    'Docs',
+                    DocsSvg,
+                    'Rich Text: For Google Docs, MS Word, Outlook, etc.',
+                )}
             </div>
         </li>
     `;

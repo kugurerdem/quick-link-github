@@ -147,7 +147,6 @@ footer {
 
 .footer-hr {
     margin-top: var(--space-md);
-    margin-bottom: var(--space-md);
 }
 
 footer button {
@@ -173,36 +172,4 @@ footer a {
 
 .empty-state img {
     width: 100%;
-}
-
-.format-legend {
-    display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-    color: var(--grey);
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: default;
-}
-
-.legend-item svg {
-    width: 10px;
-    height: 10px;
-}
-
-.legend-item:nth-child(1) svg {
-    fill: #1f2328;
-}
-.legend-item:nth-child(2) svg {
-    fill: #4a154b;
-}
-.legend-item:nth-child(3) svg {
-    fill: #4285f4;
 }

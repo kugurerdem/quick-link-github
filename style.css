@@ -101,13 +101,13 @@ a {
     background: white;
     border: 1px solid var(--light-grey);
     border-radius: 4px;
-    padding: 2px 6px;
+    padding: 4px;
     font-size: var(--font-size-small);
     color: var(--dark-grey);
     cursor: pointer;
-    min-width: 40px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-xs);
 }
 

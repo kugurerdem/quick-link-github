@@ -176,10 +176,10 @@ footer a {
 
 .format-legend {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
     gap: var(--space-md);
-    margin-bottom: var(--space-md);
+    margin-top: var(--space-md);
     color: var(--grey);
     font-size: 0.7rem;
     font-weight: 600;

@@ -2,14 +2,18 @@
 
 ## Project Overview
 
-"Quick Link GitHub" is a browser extension (compatible with Firefox and Chrome) designed to simplify sharing GitHub Issues and Pull Requests. It allows users to quickly copy formatted Markdown links (e.g., `[Title #123](url)`) and maintains a history of recently copied links.
+"Quick Link GitHub" is a browser extension (compatible with Firefox and Chrome) designed to simplify sharing GitHub Issues and Pull Requests. It allows users to quickly copy formatted links for various platforms and maintains a history of recently copied links.
 
 **Key Features:**
 
--   Detects if the current tab is a GitHub Issue or PR.
--   Generates "Long" (Title + #ID) and "Short" (#ID) Markdown links.
--   Persists a history of copied links using local storage.
--   Simple, clean UI.
+-   **Context Awareness:** Detects if the current tab is a GitHub Issue or PR.
+-   **Multiple Copy Formats:**
+    -   **Markdown:** `[Title #123](url)`
+    -   **Slack:** `<url|Title #123>`
+    -   **Rich Text (Docs):** HTML link for Google Docs, MS Word, Outlook, etc.
+-   **Copy Options:** Supports "Long" (Title + #ID), "Title Only", and "Short" (#ID) variations.
+-   **History:** Persists a list of recently copied links using local storage.
+-   **UI:** Clean, icon-based interface with tooltips for format details.
 
 **Tech Stack:**
 
@@ -69,12 +73,14 @@ npm run lint:fix
     -   **State Management:** Uses a simple global `state` object.
     -   **Rendering:** Functional-style components (e.g., `App`, `CopyFromThisPage`) return HTML strings which are injected into the DOM via `innerHTML`.
     -   **Storage:** Uses `chrome.storage.local` to save the history of copied links.
--   `style.css`: Main stylesheet.
+-   `style.css`: Main stylesheet. Uses CSS variables for spacing and colors.
 -   `reset.css`: CSS reset.
 
 ### Key Logic (`index.js`)
 
 -   **Initialization (`init`):** Queries the active tab to check if it's a GitHub page matching `pageUrlRegex`. Loads history from storage.
--   **Parsing:** Extracts Repo Name, Issue/PR Number, and Title from the page title and URL.
--   **Event Handling:** Listeners are re-attached after every `render()` call.
--   **Icons:** SVG icons are embedded directly as strings in JavaScript variables.
+-   **URL Parsing:** Uses a regex that supports hash fragments and query parameters to correctly identify Issue/PR URLs.
+-   **Copy Logic:**
+    -   `onCopyClick` determines the format (MD, Slack, Docs) based on the button's `data-type`.
+    -   `copyToClipboard` handles both `text/plain` and `text/html` (for Rich Text) copying.
+-   **Icons:** SVG icons (including brand icons for Slack/Docs) are embedded directly as strings in JavaScript variables.

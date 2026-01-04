@@ -102,7 +102,7 @@ const CopyFromThisPage = (currentPage) => {
     const shortCopyText = `#${pageIndex}`;
     const titleOnlyCopyText = pageHeader;
 
-    const contributions = [longCopyText, shortCopyText, titleOnlyCopyText]
+    const contributions = [longCopyText, titleOnlyCopyText, shortCopyText]
         .map((t) => Contribution({ pageInfoText: t, pageUrl }, 'current'))
         .join('');
 

@@ -14,7 +14,7 @@ html {
     /* Spacing Scale */
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
-    --space-md: 0.9rem;
+    --space-md: 1rem;
     --space-lg: 1.5rem;
     --space-xl: 2rem;
     --space-xxl: 3rem;
@@ -57,7 +57,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
     font-size: var(--font-size-normal);
 }
 

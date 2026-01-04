@@ -90,6 +90,17 @@ const EmptyState = () => `
 
 const Footer = () => `
     <hr>
+    <section class="format-legend">
+        <div class="legend-item" title="Markdown format: [text](url)">
+            ${MarkdownSvg} <span>MD</span>
+        </div>
+        <div class="legend-item" title="Slack format: <url|text>">
+            ${SlackSvg} <span>Slack</span>
+        </div>
+        <div class="legend-item" title="Google Docs: Rich text link">
+            ${DocsSvg} <span>Docs</span>
+        </div>
+    </section>
     <footer class="footer-hr">
         <a href="https://github.com/kugurerdem/quick-link-github/" target="_blank" class="footer-title">Quick Link GitHub</a>
         <button class="clear-history">Clear history</button>

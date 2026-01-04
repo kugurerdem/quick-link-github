@@ -94,6 +94,7 @@ const Footer = () => `
         <a href="https://github.com/kugurerdem/quick-link-github/" target="_blank" class="footer-title">Quick Link GitHub</a>
         <button class="clear-history">Clear history</button>
     </footer>
+    <hr />
     <section class="format-legend">
         <div class="legend-item">
             ${MarkdownSvg} <span>MD: [text](url)</span>

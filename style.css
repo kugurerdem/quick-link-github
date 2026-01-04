@@ -147,6 +147,7 @@ footer {
 
 .footer-hr {
     margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
 }
 
 footer button {
@@ -179,7 +180,6 @@ footer a {
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: var(--space-md);
-    margin-top: var(--space-md);
     color: var(--grey);
     font-size: 0.7rem;
     font-weight: 600;

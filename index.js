@@ -154,6 +154,12 @@ const Contribution = (
         return '<span class="contribution-icon">' + icon + '</span>';
     }
 
+    const isRecentlyCopied =
+        state.recentCopyId && state.recentCopyId.startsWith(id);
+    const copiedType = isRecentlyCopied
+        ? state.recentCopyId.split('__')[1]
+        : null;
+
     const createBtn = (type, label, icon, tooltip) => `
         <button class="copy-button"
             data-id="${id}"

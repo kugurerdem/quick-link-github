@@ -9,7 +9,7 @@ html {
     --dark-grey: #1f2328;
     --light-grey: #ececec;
     --grey: #7a7a7a;
-    --blue: #0366D6;
+    --blue: #0366d6;
 
     /* Spacing Scale */
     --space-xs: 0.25rem;
@@ -102,7 +102,6 @@ a {
     cursor: pointer;
     fill: var(--dark-grey);
 }
-
 
 .no-history-message {
     color: var(--dark-grey);

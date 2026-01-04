@@ -1,33 +1,40 @@
 # Quick Link GitHub
 
 ## Project Overview
+
 "Quick Link GitHub" is a browser extension (compatible with Firefox and Chrome) designed to simplify sharing GitHub Issues and Pull Requests. It allows users to quickly copy formatted Markdown links (e.g., `[Title #123](url)`) and maintains a history of recently copied links.
 
 **Key Features:**
-- Detects if the current tab is a GitHub Issue or PR.
-- Generates "Long" (Title + #ID) and "Short" (#ID) Markdown links.
-- Persists a history of copied links using local storage.
-- Simple, clean UI.
+
+-   Detects if the current tab is a GitHub Issue or PR.
+-   Generates "Long" (Title + #ID) and "Short" (#ID) Markdown links.
+-   Persists a history of copied links using local storage.
+-   Simple, clean UI.
 
 **Tech Stack:**
-- **Language:** Vanilla JavaScript (ES6+), HTML, CSS.
-- **Manifest Version:** 3.
-- **Dependencies:** `web-ext` (for running in Firefox), `prettier` (for formatting).
+
+-   **Language:** Vanilla JavaScript (ES6+), HTML, CSS.
+-   **Manifest Version:** 3.
+-   **Dependencies:** `web-ext` (for running in Firefox), `prettier` (for formatting).
 
 ## Building and Running
 
 ### Prerequisites
-- Node.js and npm installed.
+
+-   Node.js and npm installed.
 
 ### Setup
+
 1.  Install dependencies:
     ```bash
     npm install
     ```
 
 ### Development Server / Running
+
 -   **Firefox:**
     Run the extension in a temporary Firefox instance with auto-reload:
+
     ```bash
     npm run start:firefox
     ```
@@ -39,11 +46,15 @@
     4.  Select the project root directory (`quick-link-github`).
 
 ### Linting
+
 Check for formatting issues:
+
 ```bash
 npm run lint
 ```
+
 Fix formatting issues:
+
 ```bash
 npm run lint:fix
 ```
@@ -51,6 +62,7 @@ npm run lint:fix
 ## Development Conventions
 
 ### File Structure
+
 -   `manifest.json`: The extension manifest (V3). Defines permissions (`activeTab`, `storage`), icons, and the popup (`index.html`).
 -   `index.html`: The main entry point for the extension popup.
 -   `index.js`: Contains all the application logic.
@@ -61,6 +73,7 @@ npm run lint:fix
 -   `reset.css`: CSS reset.
 
 ### Key Logic (`index.js`)
+
 -   **Initialization (`init`):** Queries the active tab to check if it's a GitHub page matching `pageUrlRegex`. Loads history from storage.
 -   **Parsing:** Extracts Repo Name, Issue/PR Number, and Title from the page title and URL.
 -   **Event Handling:** Listeners are re-attached after every `render()` call.

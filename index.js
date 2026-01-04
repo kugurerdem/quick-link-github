@@ -1,6 +1,7 @@
 const { assign } = Object;
 
-const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*([?#].*)?$/;
+const pageUrlRegex =
+    /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*([?#].*)?$/;
 
 const titleDelimiter = String.fromCharCode(183);
 
@@ -64,20 +65,18 @@ const render = () => {
     setListeners();
 };
 
-
 const App = (state) => {
     if (!state.currentPage.pageTitle && state.recentCopies.length === 0) {
-        return [
-            EmptyState(),
-            Footer()
-        ].filter(Boolean).join('');
+        return [EmptyState(), Footer()].filter(Boolean).join('');
     }
 
     return [
         state.currentPage.pageType && CopyFromThisPage(state.currentPage),
         PreviouslyCopied(state.recentCopies),
         Footer(),
-    ].filter(Boolean).join('')
+    ]
+        .filter(Boolean)
+        .join('');
 };
 
 const EmptyState = () => `
@@ -88,7 +87,6 @@ const EmptyState = () => `
         <img src="./screenshot.png" />
     </section>
 `;
-
 
 const Footer = () => `
     <hr>
@@ -102,15 +100,11 @@ const CopyFromThisPage = (currentPage) => {
     const { pageHeader, pageIndex, pageUrl } = currentPage;
     const longCopyText = `${pageHeader} #${pageIndex}`;
     const shortCopyText = `#${pageIndex}`;
+    const titleOnlyCopyText = pageHeader;
 
-    const contributions =
-        [longCopyText, shortCopyText].map(t =>
-            Contribution(
-                { pageInfoText: t, pageUrl },
-                'current',
-            ),
-        ).join('')
-
+    const contributions = [longCopyText, shortCopyText, titleOnlyCopyText]
+        .map((t) => Contribution({ pageInfoText: t, pageUrl }, 'current'))
+        .join('');
 
     return `
         <section>
@@ -120,16 +114,18 @@ const CopyFromThisPage = (currentPage) => {
                 ${contributions}
             </ul>
         </section>
-    `
+    `;
 };
 
 const PreviouslyCopied = (recentCopies) => `
     <section>
         <h2>Previously copied</h2>
         <hr>
-        ${recentCopies.length > 0
-        ? `<ol>${recentCopies.map(c => Contribution(c, 'previous')).join('')}</ol>`
-        : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'}
+        ${
+            recentCopies.length > 0
+                ? `<ol>${recentCopies.map((c) => Contribution(c, 'previous')).join('')}</ol>`
+                : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'
+        }
     </section>
     `;
 
@@ -142,9 +138,9 @@ const Contribution = (
 
     /**
      * Return the icon for the contribution based on the page type.
-     * 
+     *
      * We don't need to show the icon for the current page, it should be very
-     * obvious if the user has a PR or an issue page open. But we need to 
+     * obvious if the user has a PR or an issue page open. But we need to
      * show the icon for the previously copied contributions, as it's
      * difficult to tell if the item is a PR or an issue.
      */
@@ -170,21 +166,26 @@ const Contribution = (
                 ${icon()}
                 <a href="${pageUrl}" class="contribution-link" target="_blank">
                     ${escapeHTML(pageInfoText)}
-                    ${repoName
-            ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
-            : ''}
+                    ${
+                        repoName
+                            ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
+                            : ''
+                    }
                 </a>
             </div>
             <div class="contribution-actions">
                 <button class="copy-button" id="copy-button-${id}"
-                    ${state.recentCopyId && state.recentCopyId != id
-            ? 'disabled' : ''}>
+                    ${
+                        state.recentCopyId && state.recentCopyId != id
+                            ? 'disabled'
+                            : ''
+                    }>
                 ${state.recentCopyId == id ? CheckSvg : CopySvg}
                 </button>
             </div>
         </li>
-    `
-}
+    `;
+};
 
 const setListeners = () => {
     document
@@ -197,15 +198,13 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const id =
-        e.currentTarget.id.split('copy-button-').slice(1).join('');
+    const id = e.currentTarget.id.split('copy-button-').slice(1).join('');
     const [section, ...restOfTheId] = id.split('-');
     const contributionId = restOfTheId.join('-');
     const pageItem = document.getElementById(`page-item-${id}`);
 
     const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
     const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
-
 
     const textToCopy = `[${pageInfoText}](${pageUrl})`;
     copyToClipboard(textToCopy);
@@ -218,9 +217,7 @@ const onCopyClick = (e) => {
 
     render();
 
-    if (!state.recentCopies.some(
-        p => p.contributionId == contributionId
-    )) {
+    if (!state.recentCopies.some((p) => p.contributionId == contributionId)) {
         state.recentCopies.push({
             contributionId,
             pageInfoText,
@@ -228,12 +225,16 @@ const onCopyClick = (e) => {
         });
     }
 
-    const index = state.recentCopies.findIndex(p => p.contributionId == contributionId);
+    const index = state.recentCopies.findIndex(
+        (p) => p.contributionId == contributionId,
+    );
 
-    state.recentCopies.unshift(...state.recentCopies.splice(index, 1))
+    state.recentCopies.unshift(...state.recentCopies.splice(index, 1));
 
-    state.recentCopies =
-        state.recentCopies.slice(0, state.recentCopiesMaxLength);
+    state.recentCopies = state.recentCopies.slice(
+        0,
+        state.recentCopiesMaxLength,
+    );
 
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 };
@@ -266,8 +267,8 @@ const escapeHTML = (str) => {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
-}
+        .replace(/'/g, '&#39;');
+};
 
 const unescapeHTML = (str) => {
     return str
@@ -275,8 +276,8 @@ const unescapeHTML = (str) => {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-}
+        .replace(/&#39;/g, "'");
+};
 
 const CopySvg = `
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -287,7 +288,7 @@ const CopySvg = `
             fill="#7A7A7A"
             d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"
         />
-    </svg>`
+    </svg>`;
 
 const CheckSvg = `
     <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">

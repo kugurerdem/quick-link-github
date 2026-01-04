@@ -106,12 +106,14 @@ a {
     color: var(--dark-grey);
     cursor: pointer;
     min-width: 40px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .copy-button:hover {
     background-color: var(--light-grey);
     border-color: var(--grey);
-    fill: var(--dark-grey);
 }
 
 .copy-button:disabled {

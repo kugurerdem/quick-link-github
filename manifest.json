@@ -12,7 +12,7 @@
     },
     "browser_specific_settings": {
         "gecko": {
-            "id": "cem@cemunalan.com.tr"
+            "id": "{f6bad69a-5fa0-11ef-b2e1-325096b39f47}"
         }
     },
     "permissions": ["activeTab", "storage"]

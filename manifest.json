@@ -2,13 +2,18 @@
     "manifest_version": 3,
     "name": "Quick Link Github",
     "description": "Keeps record of the PR and Issues.",
-    "version": "1.0",
+    "version": "1.1",
     "action": {
         "default_popup": "index.html"
     },
     "icons": {
         "48": "icon48.png",
         "128": "icon128.png"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{f6bad69a-5fa0-11ef-b2e1-325096b39f47}"
+        }
     },
     "permissions": ["activeTab", "storage"]
 }

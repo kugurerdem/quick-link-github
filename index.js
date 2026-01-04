@@ -1,6 +1,7 @@
 const { assign } = Object;
 
-const pageUrlRegex = /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*$/;
+const pageUrlRegex =
+    /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*([?#].*)?$/;
 
 const titleDelimiter = String.fromCharCode(183);
 
@@ -64,20 +65,18 @@ const render = () => {
     setListeners();
 };
 
-
 const App = (state) => {
     if (!state.currentPage.pageTitle && state.recentCopies.length === 0) {
-        return [
-            EmptyState(),
-            Footer()
-        ].filter(Boolean).join('');
+        return [EmptyState(), Footer()].filter(Boolean).join('');
     }
 
     return [
         state.currentPage.pageType && CopyFromThisPage(state.currentPage),
         PreviouslyCopied(state.recentCopies),
         Footer(),
-    ].filter(Boolean).join('')
+    ]
+        .filter(Boolean)
+        .join('');
 };
 
 const EmptyState = () => `
@@ -88,7 +87,6 @@ const EmptyState = () => `
         <img src="./screenshot.png" />
     </section>
 `;
-
 
 const Footer = () => `
     <hr>
@@ -102,15 +100,11 @@ const CopyFromThisPage = (currentPage) => {
     const { pageHeader, pageIndex, pageUrl } = currentPage;
     const longCopyText = `${pageHeader} #${pageIndex}`;
     const shortCopyText = `#${pageIndex}`;
+    const titleOnlyCopyText = pageHeader;
 
-    const contributions =
-        [longCopyText, shortCopyText].map(t =>
-            Contribution(
-                { pageInfoText: t, pageUrl },
-                'current',
-            ),
-        ).join('')
-
+    const contributions = [longCopyText, titleOnlyCopyText, shortCopyText]
+        .map((t) => Contribution({ pageInfoText: t, pageUrl }, 'current'))
+        .join('');
 
     return `
         <section>
@@ -120,16 +114,18 @@ const CopyFromThisPage = (currentPage) => {
                 ${contributions}
             </ul>
         </section>
-    `
+    `;
 };
 
 const PreviouslyCopied = (recentCopies) => `
     <section>
         <h2>Previously copied</h2>
         <hr>
-        ${recentCopies.length > 0
-        ? `<ol>${recentCopies.map(c => Contribution(c, 'previous')).join('')}</ol>`
-        : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'}
+        ${
+            recentCopies.length > 0
+                ? `<ol>${recentCopies.map((c) => Contribution(c, 'previous')).join('')}</ol>`
+                : '<p class="no-history-message">No items copied yet. GitHub links you copy using the extension will appear here.</p>'
+        }
     </section>
     `;
 
@@ -142,9 +138,9 @@ const Contribution = (
 
     /**
      * Return the icon for the contribution based on the page type.
-     * 
+     *
      * We don't need to show the icon for the current page, it should be very
-     * obvious if the user has a PR or an issue page open. But we need to 
+     * obvious if the user has a PR or an issue page open. But we need to
      * show the icon for the previously copied contributions, as it's
      * difficult to tell if the item is a PR or an issue.
      */
@@ -158,6 +154,23 @@ const Contribution = (
         return '<span class="contribution-icon">' + icon + '</span>';
     }
 
+    const isRecentlyCopied =
+        state.recentCopyId && state.recentCopyId.startsWith(id);
+    const copiedType = isRecentlyCopied
+        ? state.recentCopyId.split('__')[1]
+        : null;
+
+    const createBtn = (type, label, icon, tooltip) => `
+        <button class="copy-button"
+            data-id="${id}"
+            data-type="${type}"
+            title="${tooltip}"
+            ${isRecentlyCopied ? 'disabled' : ''}
+        >
+            ${copiedType === type ? CheckSvg : icon}
+        </button>
+    `;
+
     return `
         <li
             id="page-item-${id}"
@@ -170,21 +183,26 @@ const Contribution = (
                 ${icon()}
                 <a href="${pageUrl}" class="contribution-link" target="_blank">
                     ${escapeHTML(pageInfoText)}
-                    ${repoName
-            ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
-            : ''}
+                    ${
+                        repoName
+                            ? `<span class="contribution-repo">${escapeHTML(repoName)}</span>`
+                            : ''
+                    }
                 </a>
             </div>
             <div class="contribution-actions">
-                <button class="copy-button" id="copy-button-${id}"
-                    ${state.recentCopyId && state.recentCopyId != id
-            ? 'disabled' : ''}>
-                ${state.recentCopyId == id ? CheckSvg : CopySvg}
-                </button>
+                ${createBtn('md', 'MD', MarkdownSvg, 'Markdown: [Title](URL)')}
+                ${createBtn('slack', 'Slack', SlackSvg, 'Slack: <URL|Title>')}
+                ${createBtn(
+                    'docs',
+                    'Docs',
+                    DocsSvg,
+                    'Rich Text: For Google Docs, MS Word, Outlook, etc.',
+                )}
             </div>
         </li>
-    `
-}
+    `;
+};
 
 const setListeners = () => {
     document
@@ -197,20 +215,30 @@ const setListeners = () => {
 };
 
 const onCopyClick = (e) => {
-    const id =
-        e.currentTarget.id.split('copy-button-').slice(1).join('');
-    const [section, ...restOfTheId] = id.split('-');
-    const contributionId = restOfTheId.join('-');
-    const pageItem = document.getElementById(`page-item-${id}`);
+    const button = e.currentTarget;
+    const id = button.getAttribute('data-id');
+    const type = button.getAttribute('data-type');
+    const fullId = `${id}__${type}`;
 
+    const pageItem = document.getElementById(`page-item-${id}`);
     const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
     const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
 
+    let textToCopy = '';
+    let htmlToCopy = null;
 
-    const textToCopy = `[${pageInfoText}](${pageUrl})`;
-    copyToClipboard(textToCopy);
+    if (type === 'md') {
+        textToCopy = `[${pageInfoText}](${pageUrl})`;
+    } else if (type === 'slack') {
+        textToCopy = `<${pageUrl}|${pageInfoText}>`;
+    } else if (type === 'docs') {
+        textToCopy = `${pageInfoText}`;
+        htmlToCopy = `<a href="${pageUrl}">${pageInfoText}</a>`;
+    }
 
-    state.recentCopyId = id;
+    copyToClipboard(textToCopy, htmlToCopy);
+
+    state.recentCopyId = fullId;
     setTimeout(() => {
         state.recentCopyId = null;
         render();
@@ -218,9 +246,10 @@ const onCopyClick = (e) => {
 
     render();
 
-    if (!state.recentCopies.some(
-        p => p.contributionId == contributionId
-    )) {
+    const [section, ...restOfTheId] = id.split('-');
+    const contributionId = restOfTheId.join('-');
+
+    if (!state.recentCopies.some((p) => p.contributionId == contributionId)) {
         state.recentCopies.push({
             contributionId,
             pageInfoText,
@@ -228,12 +257,16 @@ const onCopyClick = (e) => {
         });
     }
 
-    const index = state.recentCopies.findIndex(p => p.contributionId == contributionId);
+    const index = state.recentCopies.findIndex(
+        (p) => p.contributionId == contributionId,
+    );
 
-    state.recentCopies.unshift(...state.recentCopies.splice(index, 1))
+    state.recentCopies.unshift(...state.recentCopies.splice(index, 1));
 
-    state.recentCopies =
-        state.recentCopies.slice(0, state.recentCopiesMaxLength);
+    state.recentCopies = state.recentCopies.slice(
+        0,
+        state.recentCopiesMaxLength,
+    );
 
     chrome.storage.local.set({ recentCopies: state.recentCopies });
 };
@@ -244,19 +277,17 @@ const onClearHistoryClick = () => {
     render();
 };
 
-const copyToClipboard = (text) => {
-    const textarea = document.createElement('textarea');
-
-    textarea.value = text;
-    textarea.style.position = 'absolute';
-    textarea.style.left = '-9999px';
-
-    document.body.appendChild(textarea);
-
-    textarea.select();
+const copyToClipboard = (text, html) => {
+    const listener = (e) => {
+        e.clipboardData.setData('text/plain', text);
+        if (html) {
+            e.clipboardData.setData('text/html', html);
+        }
+        e.preventDefault();
+    };
+    document.addEventListener('copy', listener);
     document.execCommand('copy');
-
-    document.body.removeChild(textarea);
+    document.removeEventListener('copy', listener);
 };
 
 const escapeHTML = (str) => {
@@ -266,8 +297,8 @@ const escapeHTML = (str) => {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
-}
+        .replace(/'/g, '&#39;');
+};
 
 const unescapeHTML = (str) => {
     return str
@@ -275,25 +306,8 @@ const unescapeHTML = (str) => {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-}
-
-const CopySvg = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-        width="17" height="22"
-        fill="none"
-    >
-        <path
-            fill="#7A7A7A"
-            d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"
-        />
-    </svg>`
-
-const CheckSvg = `
-    <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.2225 1.24213C17.6968 1.73041 17.6968 2.52338 17.2225 3.01166L7.50822 13.0117C7.03389 13.4999 6.26358 13.4999 5.78925 13.0117L0.932103 8.01166C0.457772 7.52338 0.457772 6.73041 0.932103 6.24213C1.40643 5.75385 2.17675 5.75385 2.65108 6.24213L6.65063 10.3554L15.5073 1.24213C15.9817 0.753845 16.752 0.753845 17.2263 1.24213H17.2225Z" fill="#1F883D"/>
-    </svg>
-`;
+        .replace(/&#39;/g, "'");
+};
 
 const IssueSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="14">
@@ -307,6 +321,33 @@ const PrSvg = `
         <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
 
         <path d="M305.8 2.1C314.4 5.9 320 14.5 320 24V64h16c70.7 0 128 57.3 128 128V358.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3V192c0-35.3-28.7-64-64-64H320v40c0 9.5-5.6 18.1-14.2 21.9s-18.8 2.3-25.8-4.1l-80-72c-5.1-4.6-7.9-11-7.9-17.8s2.9-13.3 7.9-17.8l80-72c7-6.3 17.2-7.9 25.8-4.1zM104 80A24 24 0 1 0 56 80a24 24 0 1 0 48 0zm8 73.3V358.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3V153.3C19.7 141 0 112.8 0 80C0 35.8 35.8 0 80 0s80 35.8 80 80c0 32.8-19.7 61-48 73.3zM104 432a24 24 0 1 0 -48 0 24 24 0 1 0 48 0zm328 24a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/>
+    </svg>
+`;
+
+const CheckSvg = `
+    <svg width="12" height="12" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.2225 1.24213C17.6968 1.73041 17.6968 2.52338 17.2225 3.01166L7.50822 13.0117C7.03389 13.4999 6.26358 13.4999 5.78925 13.0117L0.932103 8.01166C0.457772 7.52338 0.457772 6.73041 0.932103 6.24213C1.40643 5.75385 2.17675 5.75385 2.65108 6.24213L6.65063 10.3554L15.5073 1.24213C15.9817 0.753845 16.752 0.753845 17.2263 1.24213H17.2225Z" fill="#1F883D"/>
+    </svg>
+`;
+
+const MarkdownSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 640 512" fill="currentColor">
+        <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+        <path d="M593.8 59.1H46.2C20.7 59.1 0 79.8 0 105.2v301.5c0 25.5 20.7 46.2 46.2 46.2h547.7c25.5 0 46.2-20.7 46.2-46.1V105.2c0-25.4-20.8-46.1-46.3-46.1zM338.5 360.6H277v-120l-61.5 76.9-61.5-76.9v120H92.3V151.4h61.5l61.5 76.9 61.5-76.9h61.5v209.2zm135.3 3.1L381.5 256H446V151.4h61.5V256h64.5l-92.3 107.7z"/>
+    </svg>
+`;
+
+const SlackSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 448 512" fill="currentColor">
+        <!-- Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+        <path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/>
+    </svg>
+`;
+
+const DocsSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 384 512" fill="currentColor">
+        <!-- Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+        <path d="M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zm384 64H256V0L384 128z"/>
     </svg>
 `;
 

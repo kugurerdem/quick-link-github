@@ -101,31 +101,19 @@ a {
     background: white;
     border: 1px solid var(--light-grey);
     border-radius: 4px;
-    padding: 4px;
+    width: 28px;
+    height: 30px;
     font-size: var(--font-size-small);
     color: var(--dark-grey);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-xs);
 }
 
 .copy-button:hover {
     background-color: var(--light-grey);
     border-color: var(--grey);
-}
-
-.copy-button[data-type='md'] svg {
-    fill: #1f2328;
-}
-
-.copy-button[data-type='slack'] svg {
-    fill: #4a154b;
-}
-
-.copy-button[data-type='docs'] svg {
-    fill: #4285f4;
 }
 
 .copy-button:disabled {

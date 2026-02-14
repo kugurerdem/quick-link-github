@@ -1,9 +1,54 @@
 const { assign } = Object;
 
 const pageUrlRegex =
-    /github\.com\/[\w_.-]+\/[\w_.-]+\/(issues|pull)\/[0-9]+(\/[\w_.-]+)*([?#].*)?$/;
+    /github\.com\/([\w_.-]+)\/([\w_.-]+)\/(issues|pull)\/([0-9]+)(?:\/[\w_.-]+)*(?:[?#].*)?$/;
 
 const titleDelimiter = String.fromCharCode(183);
+
+const parsePageHeader = (pageTitle, { pageType, pageIndex, repoName }) => {
+    const parts = pageTitle
+        .split(titleDelimiter)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+    if (parts.length === 0) {
+        return '';
+    }
+
+    if (parts.at(-1).toLowerCase() === 'github') {
+        parts.pop();
+    }
+
+    if (parts.at(-1)?.toLowerCase() === repoName.toLowerCase()) {
+        parts.pop();
+    }
+
+    const issueOrPrPattern =
+        pageType === 'issue'
+            ? new RegExp(`^issue\\s*#?\\s*${pageIndex}$`, 'i')
+            : new RegExp(`^pull request\\s*#?\\s*${pageIndex}$`, 'i');
+    const numberOnlyPattern = new RegExp(`^#?\\s*${pageIndex}$`);
+
+    if (
+        parts.length > 1 &&
+        (issueOrPrPattern.test(parts.at(-1)) ||
+            numberOnlyPattern.test(parts.at(-1)))
+    ) {
+        parts.pop();
+    }
+
+    let pageHeader = parts.join(` ${titleDelimiter} `).trim();
+
+    // Some PR pages append the author as " by <username>".
+    if (pageType === 'pr') {
+        pageHeader = pageHeader.replace(
+            /\s+by\s+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/,
+            '',
+        );
+    }
+
+    return pageHeader || pageTitle.trim();
+};
 
 const state = {
     currentPage: {},
@@ -14,32 +59,25 @@ const state = {
 };
 
 const init = async () => {
-    const { title: pageTitle, url: pageUrl } = await new Promise((res) => {
+    const tab = await new Promise((res) => {
         chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) =>
             res(tab),
         );
     });
+    const pageTitle = tab?.title || '';
+    const pageUrl = tab?.url || '';
 
-    if (pageUrlRegex.test(pageUrl)) {
-        const parts = pageTitle.split(titleDelimiter);
-        // ^ Title is delimited by the character '·' (183), with having
-        // the form <issue or pr name> ' · ' <page index> ' · ' <repo
-        // name>.
+    const pageMatch = pageUrlRegex.exec(pageUrl);
 
-        const [_pageIndex, repoName] = parts.slice(1, 3);
-        const pageIndex = _pageIndex.match(/\d+/)[0];
-        let pageHeader = parts.slice(0, -2).join(titleDelimiter).trim();
-        // ^ Since issue or pr name can contain the delimiter character,
-        // we split the title by the delimiter and take the last two
-        // parts as the page index and repo name.
-        // And then we join the rest of the parts as the page title.
-
-        const pageType = pageUrl.includes('issue') ? 'issue' : 'pr';
-
-        // Get rid of the author name in the PR title.
-        if (pageType === 'pr') {
-            pageHeader = pageHeader.replace(/ by.*$/, '');
-        }
+    if (pageMatch) {
+        const [, ownerName, repoSlug, pageKind, pageIndex] = pageMatch;
+        const repoName = `${ownerName}/${repoSlug}`;
+        const pageType = pageKind === 'issues' ? 'issue' : 'pr';
+        const pageHeader = parsePageHeader(pageTitle, {
+            pageType,
+            pageIndex,
+            repoName,
+        });
 
         assign(state.currentPage, {
             pageTitle,
@@ -154,22 +192,7 @@ const Contribution = (
         return '<span class="contribution-icon">' + icon + '</span>';
     }
 
-    const isRecentlyCopied =
-        state.recentCopyId && state.recentCopyId.startsWith(id);
-    const copiedType = isRecentlyCopied
-        ? state.recentCopyId.split('__')[1]
-        : null;
-
-    const createBtn = (type, label, icon, tooltip) => `
-        <button class="copy-button"
-            data-id="${id}"
-            data-type="${type}"
-            title="${tooltip}"
-            ${isRecentlyCopied ? 'disabled' : ''}
-        >
-            ${copiedType === type ? CheckSvg : icon}
-        </button>
-    `;
+    const isRecentlyCopied = state.recentCopyId === id;
 
     return `
         <li
@@ -191,14 +214,13 @@ const Contribution = (
                 </a>
             </div>
             <div class="contribution-actions">
-                ${createBtn('md', 'MD', MarkdownSvg, 'Markdown: [Title](URL)')}
-                ${createBtn('slack', 'Slack', SlackSvg, 'Slack: <URL|Title>')}
-                ${createBtn(
-                    'docs',
-                    'Docs',
-                    DocsSvg,
-                    'Rich Text: For Google Docs, MS Word, Outlook, etc.',
-                )}
+                <button class="copy-button"
+                    data-id="${id}"
+                    title="Copy link"
+                    ${isRecentlyCopied ? 'disabled' : ''}
+                >
+                    ${isRecentlyCopied ? CheckSvg : CopySvg}
+                </button>
             </div>
         </li>
     `;
@@ -217,28 +239,23 @@ const setListeners = () => {
 const onCopyClick = (e) => {
     const button = e.currentTarget;
     const id = button.getAttribute('data-id');
-    const type = button.getAttribute('data-type');
-    const fullId = `${id}__${type}`;
 
     const pageItem = document.getElementById(`page-item-${id}`);
-    const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
-    const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
-
-    let textToCopy = '';
-    let htmlToCopy = null;
-
-    if (type === 'md') {
-        textToCopy = `[${pageInfoText}](${pageUrl})`;
-    } else if (type === 'slack') {
-        textToCopy = `<${pageUrl}|${pageInfoText}>`;
-    } else if (type === 'docs') {
-        textToCopy = `${pageInfoText}`;
-        htmlToCopy = `<a href="${pageUrl}">${pageInfoText}</a>`;
+    if (!pageItem) {
+        return;
     }
 
-    copyToClipboard(textToCopy, htmlToCopy);
+    const pageUrl = unescapeHTML(pageItem.getAttribute('data-page-url'));
+    const pageInfoText = unescapeHTML(pageItem.getAttribute('data-info-text'));
+    const escapedPageUrl = escapeHTML(pageUrl);
+    const escapedPageInfoText = escapeHTML(pageInfoText);
 
-    state.recentCopyId = fullId;
+    copyToClipboard(
+        pageInfoText,
+        `<a href="${escapedPageUrl}">${escapedPageInfoText}</a>`,
+    );
+
+    state.recentCopyId = id;
     setTimeout(() => {
         state.recentCopyId = null;
         render();
@@ -330,25 +347,15 @@ const CheckSvg = `
     </svg>
 `;
 
-const MarkdownSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 640 512" fill="currentColor">
-        <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-        <path d="M593.8 59.1H46.2C20.7 59.1 0 79.8 0 105.2v301.5c0 25.5 20.7 46.2 46.2 46.2h547.7c25.5 0 46.2-20.7 46.2-46.1V105.2c0-25.4-20.8-46.1-46.3-46.1zM338.5 360.6H277v-120l-61.5 76.9-61.5-76.9v120H92.3V151.4h61.5l61.5 76.9 61.5-76.9h61.5v209.2zm135.3 3.1L381.5 256H446V151.4h61.5V256h64.5l-92.3 107.7z"/>
-    </svg>
-`;
-
-const SlackSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 448 512" fill="currentColor">
-        <!-- Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-        <path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/>
-    </svg>
-`;
-
-const DocsSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 384 512" fill="currentColor">
-        <!-- Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-        <path d="M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zm384 64H256V0L384 128z"/>
-    </svg>
-`;
+const CopySvg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+        width="17" height="22"
+        fill="none"
+    >
+        <path
+            fill="#7A7A7A"
+            d="M13.967 14.167h-6.98c-.32 0-.581-.284-.581-.632V3.415c0-.348.262-.633.581-.633h5.093l2.469 2.685v8.068c0 .348-.262.632-.582.632Zm-6.98 1.898h6.98c1.283 0 2.327-1.135 2.327-2.53V5.467c0-.502-.186-.985-.513-1.34l-2.465-2.685a1.677 1.677 0 0 0-1.232-.557H6.987c-1.283 0-2.326 1.134-2.326 2.53v10.12c0 1.395 1.043 2.53 2.326 2.53ZM2.334 5.945C1.051 5.945.008 7.08.008 8.475v10.12c0 1.395 1.043 2.53 2.326 2.53h6.98c1.283 0 2.326-1.135 2.326-2.53V17.33H9.896v1.265c0 .348-.262.632-.582.632h-6.98c-.32 0-.581-.284-.581-.632V8.475c0-.348.261-.633.581-.633h1.164V5.945H2.334Z"
+        />
+    </svg>`;
 
 document.addEventListener('DOMContentLoaded', init);

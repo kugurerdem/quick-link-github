@@ -251,7 +251,7 @@ const onCopyClick = (e) => {
     const escapedPageInfoText = escapeHTML(pageInfoText);
 
     copyToClipboard(
-        pageInfoText,
+        `[${pageInfoText}](${pageUrl})`,
         `<a href="${escapedPageUrl}">${escapedPageInfoText}</a>`,
     );
 

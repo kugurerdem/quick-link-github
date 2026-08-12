@@ -1,6 +1,8 @@
 {
     "name": "quick-link-github",
+
     "version": "1.2.0",
+
     "main": "index.js",
     "directories": {
         "lib": "lib"

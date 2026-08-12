@@ -103,6 +103,7 @@ a {
     border-radius: 4px;
     width: 28px;
     height: 30px;
+    padding: 0;
     font-size: var(--font-size-small);
     color: var(--dark-grey);
     cursor: pointer;

@@ -349,6 +349,7 @@ const CheckSvg = `
 
 const CopySvg = `
     <svg xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 17 22"
         width="17" height="22"
         fill="none"
     >

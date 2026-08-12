@@ -3,7 +3,7 @@
     "name": "Quick Link Github",
     "description": "Keeps record of the PR and Issues.",
 
-    "version": "1.2.0",
+    "version": "1.2.1",
 
     "action": {
         "default_popup": "index.html",
